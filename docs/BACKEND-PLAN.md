@@ -1,6 +1,6 @@
 # Backend work split — 3 owners, full features, built with Claude Code on each PC
 Written 13:49. Freeze **14:45**. Integration checkpoint **14:30**. Ready **15:30**. (13:30 checkpoint passed: cut Autopilot unless C is ahead.)
-Owners A/B/C are placeholders: write the names in the table in `docs/HANDOFF.md`. The frontend owner (done soon) becomes **C**.
+Owners: **A = Prince**, **B = Faraaz**, **C = the current frontend owner** (becomes C once the frontend shell is done; name in `docs/HANDOFF.md`).
 
 ## Principle: vertical slices, one owner per feature, end to end
 Each owner owns a feature's backend module + its route file + its frontend screen + its tests + its mock. Nobody waits: every

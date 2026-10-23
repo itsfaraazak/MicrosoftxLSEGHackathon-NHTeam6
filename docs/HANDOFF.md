@@ -8,5 +8,5 @@ Blockers: Azure endpoint/deployment/Cosmos values not yet in backend/.env.
 
 ## 2026-10-23 13:49 · scaffold · all
 Done: split backend routes into per-owner blueprints; added backend/models.py (shared pydantic contract) and docs/BACKEND-PLAN.md; /start-slice command.
-Owners (fill in names): A Portfolio Engine = ____ · B AI Layer + pitch = ____ · C Time Machine (current frontend owner) = ____
+Owners (fill in names): A Portfolio Engine = Prince (Kongara Prince Vijay Santhosh) · B AI Layer + pitch = Faraaz · C Time Machine = ____ (current frontend owner; fill in)
 Requests (owner → owner): (none yet)
