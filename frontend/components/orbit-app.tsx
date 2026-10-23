@@ -5,6 +5,7 @@ import { Dock } from "@/components/dock";
 import { Orbit, type OrbitView } from "@/components/orbit";
 import { AskView } from "@/components/views/ask-view";
 import { PortfolioView } from "@/components/views/portfolio-view";
+import { ProofView } from "@/components/views/proof-view";
 import { ProfileView } from "@/components/views/profile-view";
 import { ReplayView } from "@/components/views/replay-view";
 import { isTypingTarget } from "@/lib/shortcuts";
@@ -15,6 +16,7 @@ const CONTENT: Record<ViewId, React.ReactNode> = {
   portfolio: <PortfolioView />,
   replay: <ReplayView />,
   ask: <AskView />,
+  proof: <ProofView />,
 };
 
 const ORBIT_VIEWS: OrbitView[] = VIEWS.map((v) => ({ id: v.id, title: v.title, content: CONTENT[v.id] }));
@@ -35,7 +37,7 @@ export function OrbitApp() {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target)) return;
       if (e.key === "ArrowRight") select(active + 1);
       else if (e.key === "ArrowLeft") select(active - 1);
-      else if (/^[1-4]$/.test(e.key)) select(Number(e.key) - 1);
+      else if (/^[1-5]$/.test(e.key)) select(Number(e.key) - 1);
       else return;
       e.preventDefault();
     }

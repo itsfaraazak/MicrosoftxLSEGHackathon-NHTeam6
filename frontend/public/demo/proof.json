@@ -1,0 +1,183 @@
+{
+  "sim_date": "2022-01-03",
+  "window": {
+    "from": "2015-01-02",
+    "to": "2021-12-31"
+  },
+  "strategy": {
+    "name": "Job-aware diversified",
+    "weights": {
+      "SHY": 0.3,
+      "VTI": 0.22,
+      "VXUS": 0.18,
+      "XLV": 0.15,
+      "BND": 0.15
+    }
+  },
+  "baseline": {
+    "name": "Tech-heavy (QQQ)",
+    "weights": {
+      "QQQ": 1.0
+    }
+  },
+  "metrics": [
+    {
+      "id": "cagr",
+      "label": "Yearly return",
+      "strategy": 0.071,
+      "baseline": 0.192,
+      "unit": "%",
+      "better": false,
+      "fact_id": "proof_cagr_strategy"
+    },
+    {
+      "id": "volatility",
+      "label": "Ups and downs (volatility)",
+      "strategy": 0.082,
+      "baseline": 0.221,
+      "unit": "%",
+      "better": true,
+      "fact_id": "proof_vol_strategy"
+    },
+    {
+      "id": "max_drawdown",
+      "label": "Worst fall from a peak",
+      "strategy": -0.141,
+      "baseline": -0.286,
+      "unit": "%",
+      "better": true,
+      "fact_id": "proof_mdd_strategy"
+    },
+    {
+      "id": "sharpe",
+      "label": "Return per unit of risk (Sharpe)",
+      "strategy": 0.74,
+      "baseline": 0.81,
+      "unit": "",
+      "better": false,
+      "fact_id": "proof_sharpe_strategy"
+    },
+    {
+      "id": "tech_overlap",
+      "label": "Overlap with your job's sector",
+      "strategy": 0.31,
+      "baseline": 0.52,
+      "unit": "%",
+      "better": true,
+      "fact_id": "proof_overlap_strategy"
+    }
+  ],
+  "stress": [
+    {
+      "name": "COVID crash",
+      "from": "2020-02-19",
+      "to": "2020-03-23",
+      "strategy": -0.131,
+      "baseline": -0.286
+    },
+    {
+      "name": "Q4 2018 sell-off",
+      "from": "2018-10-01",
+      "to": "2018-12-24",
+      "strategy": -0.062,
+      "baseline": -0.233
+    }
+  ],
+  "claims": [
+    {
+      "id": "c1",
+      "claim": "Falls less than a tech-heavy portfolio in past sell-offs",
+      "verdict": "supported",
+      "evidence": [
+        "max_drawdown",
+        "stress:COVID crash",
+        "stress:Q4 2018 sell-off"
+      ],
+      "code_id": "max_drawdown"
+    },
+    {
+      "id": "c2",
+      "claim": "Gives up return in strong tech years",
+      "verdict": "supported",
+      "evidence": [
+        "cagr"
+      ],
+      "code_id": "cagr"
+    },
+    {
+      "id": "c3",
+      "claim": "Better return per unit of risk",
+      "verdict": "not_supported",
+      "evidence": [
+        "sharpe"
+      ],
+      "code_id": "sharpe"
+    }
+  ],
+  "code": [
+    {
+      "id": "max_drawdown",
+      "title": "Worst fall from a peak",
+      "source": "def max_drawdown(values):\n    peak = values.cummax()\n    return float((values / peak - 1).min())",
+      "sha256": "0000mock",
+      "output": "-0.141"
+    },
+    {
+      "id": "cagr",
+      "title": "Yearly return",
+      "source": "def cagr(values):\n    years = (values.index[-1] - values.index[0]).days / 365.25\n    return float((values.iloc[-1] / values.iloc[0]) ** (1 / years) - 1)",
+      "sha256": "0000mock",
+      "output": "0.071"
+    },
+    {
+      "id": "sharpe",
+      "title": "Return per unit of risk",
+      "source": "def sharpe(returns, rf=0.0):\n    return float((returns.mean() - rf / 252) / returns.std() * 252 ** 0.5)",
+      "sha256": "0000mock",
+      "output": "0.74"
+    }
+  ],
+  "facts": [
+    {
+      "id": "proof_cagr_strategy",
+      "value": 7.1,
+      "unit": "%",
+      "source": "backtest",
+      "as_of": "2022-01-03"
+    },
+    {
+      "id": "proof_vol_strategy",
+      "value": 8.2,
+      "unit": "%",
+      "source": "backtest",
+      "as_of": "2022-01-03"
+    },
+    {
+      "id": "proof_mdd_strategy",
+      "value": 14.1,
+      "unit": "%",
+      "source": "backtest",
+      "as_of": "2022-01-03"
+    },
+    {
+      "id": "proof_sharpe_strategy",
+      "value": 0.74,
+      "unit": "",
+      "source": "backtest",
+      "as_of": "2022-01-03"
+    },
+    {
+      "id": "proof_overlap_strategy",
+      "value": 31,
+      "unit": "%",
+      "source": "backtest",
+      "as_of": "2022-01-03"
+    }
+  ],
+  "caveats": [
+    "Backtest uses only data before the simulation date (in-sample, past performance).",
+    "Sector weights are today's, not 2022's: a known approximation.",
+    "Educational hackathon project. Not financial advice."
+  ],
+  "script": "# Reproduce every number above\nimport pandas as pd\nprices = pd.read_csv('prices.csv', index_col=0, parse_dates=True).loc[:'2021-12-31']\n# ... see source blocks in `code`\n"
+}

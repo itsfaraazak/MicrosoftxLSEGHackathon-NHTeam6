@@ -12,6 +12,7 @@ import {
   type Portfolio,
   type Profile,
 } from "@/lib/schemas";
+import { ProofResSchema } from "@/lib/proof-schema";
 
 export * from "@/lib/schemas";
 
@@ -159,6 +160,11 @@ export const api = {
     call({
       method: "POST", path: "/api/ask", body: { question, profile, sim_date }, schema: AskResSchema,
       timeoutMs: LLM_TIMEOUT_MS, demoFile: "ask", signal,
+    }),
+  proof: (profile: Profile, portfolio: Portfolio | null, sim_date: string, signal?: AbortSignal) =>
+    call({
+      method: "POST", path: "/api/proof", body: { profile, ...(portfolio ? { portfolio } : {}), sim_date },
+      schema: ProofResSchema, timeoutMs: ENGINE_TIMEOUT_MS, demoFile: "proof", signal,
     }),
   agentStep: (portfolio: Portfolio, sim_date: string, signal?: AbortSignal) =>
     call({

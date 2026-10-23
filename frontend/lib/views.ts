@@ -3,6 +3,7 @@ export const VIEWS = [
   { id: "portfolio", title: "My portfolio" },
   { id: "replay", title: "Time machine" },
   { id: "ask", title: "Ask" },
+  { id: "proof", title: "Proof" },
 ] as const;
 
 export type ViewId = (typeof VIEWS)[number]["id"];
