@@ -20,7 +20,7 @@ def replay():
             use_llm=True if args.get("llm") == "1" else None,
         )
     except KeyError as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": f"{e}. Build a plan for this person first (POST /api/portfolio)."}), 404
     result["events"] = [GuardEvent(**e).model_dump(mode="json") for e in result["events"]]
     return jsonify(result)
 

@@ -24,8 +24,24 @@ PERSONAS: dict[str, Profile] = {
 }
 
 
+REGISTRY: dict[str, Profile] = {}  # profiles of real users, remembered when their plan is built
+
+
+def key_for(name: str) -> str:
+    return (name.strip().split() or [""])[0].lower()
+
+
+def remember(profile: Profile) -> None:
+    """Called when a plan is built, so the time machine can replay the same person by first name."""
+    if key_for(profile.name):
+        REGISTRY[key_for(profile.name)] = profile
+
+
 def get_persona(profile_id: str) -> Profile:
+    k = profile_id.strip().lower()
+    if k in REGISTRY:
+        return REGISTRY[k]  # a profile the user just built wins over a demo persona with the same name
     try:
-        return PERSONAS[profile_id.lower()]
+        return PERSONAS[k]
     except KeyError:
         raise KeyError(f"unknown profile_id {profile_id!r}") from None

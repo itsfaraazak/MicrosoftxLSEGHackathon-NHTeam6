@@ -46,3 +46,25 @@ def test_rate_limit(monkeypatch):
     codes = [app.test_client().post("/api/ask", json={}, headers={"X-Forwarded-For": "9.9.9.9"}).status_code
              for _ in range(3)]
     assert codes == [200, 200, 429]
+
+
+def test_portfolio_registers_profile_for_replay(monkeypatch):
+    from engine import personas
+    from routes import portfolio_routes
+    monkeypatch.setenv("USE_MOCKS", "0")
+    personas.REGISTRY.clear()
+
+    class FakeEngine:
+        @staticmethod
+        def build(profile, exposure, sim_date):
+            raise RuntimeError("stop after registration")
+    monkeypatch.setattr(portfolio_routes, "_engine", lambda: FakeEngine)
+    monkeypatch.setattr(portfolio_routes, "_CACHE", {})
+    body = {"profile": {"name": "Quinn Q", "age": 30, "job_title": "x", "industry": "y", "risk_tolerance": "low"},
+            "sim_date": "2022-01-03"}
+    try:
+        app.test_client().post("/api/portfolio", json=body)
+    except RuntimeError:
+        pass
+    assert personas.get_persona("quinn").name == "Quinn Q"
+    personas.REGISTRY.clear()

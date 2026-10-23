@@ -86,3 +86,13 @@ def test_real_priya_2022_fires():
     m = {x["date"]: x for x in r["months"]}
     assert m["2022-12-01"]["tech_heavy"] < m["2022-12-01"]["ours"]
     assert 70000 < m["2022-12-01"]["tech_heavy"] < 80000
+
+
+def test_replay_works_for_a_user_built_profile():
+    from engine import personas
+    from models import Profile
+    p = Profile(name="Zed", age=33, job_title="Teacher", industry="Education", risk_tolerance="medium")
+    assert pytest.raises(KeyError, personas.get_persona, "zed")
+    personas.remember(p)
+    assert personas.get_persona("ZED").name == "Zed"
+    personas.REGISTRY.clear()

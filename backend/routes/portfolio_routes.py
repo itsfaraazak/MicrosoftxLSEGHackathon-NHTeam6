@@ -63,6 +63,8 @@ def portfolio():
     from models import Profile
     body = request.get_json(force=True)
     profile_dict, sim_date = body["profile"], body["sim_date"]
+    from engine.personas import remember
+    remember(Profile(**profile_dict))  # so /api/replay can find this person by name, even on a cache hit
     key = _cache_key(profile_dict, sim_date)
     cached = _CACHE.get(key)
     if cached is not None:
