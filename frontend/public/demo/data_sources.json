@@ -1,0 +1,46 @@
+[
+  {
+    "id": "prices",
+    "label": "ETF daily closing prices",
+    "provider": "yfinance (Yahoo Finance)",
+    "file": "prices.csv",
+    "rows": 2516,
+    "from": "2015-01-02",
+    "to": "2024-12-31",
+    "fetched_at": "2026-10-23T13:18:00Z",
+    "kind": "real"
+  },
+  {
+    "id": "fred",
+    "label": "CPI (CPIAUCSL) and 3-month T-bill rate (TB3MS)",
+    "provider": "FRED (Federal Reserve Bank of St. Louis)",
+    "file": "fred.csv",
+    "rows": 141,
+    "from": "2015-01-01",
+    "to": "2026-09-01",
+    "fetched_at": "2026-10-23T13:18:00Z",
+    "kind": "real"
+  },
+  {
+    "id": "layoffs",
+    "label": "Tech layoffs tracker (company, total_laid_off, date)",
+    "provider": "layoffs.fyi (via public GitHub mirror of the tracker export)",
+    "file": "layoffs.csv",
+    "rows": 2361,
+    "from": "2020-03-11",
+    "to": "2023-03-06",
+    "fetched_at": "2026-10-23T13:18:00Z",
+    "kind": "real"
+  },
+  {
+    "id": "mocks",
+    "label": "Frontend mock fixtures (portfolio, proof, replay, live status/quotes)",
+    "provider": "internal",
+    "file": "mocks/*.json",
+    "rows": 0,
+    "from": null,
+    "to": null,
+    "fetched_at": "2026-10-23T13:18:00Z",
+    "kind": "mock"
+  }
+]

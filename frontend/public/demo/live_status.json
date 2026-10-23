@@ -1,0 +1,9 @@
+{
+  "latest_date": "2026-10-22",
+  "first_date": "2015-01-02",
+  "rows": 2700,
+  "tickers": 17,
+  "source": "yfinance",
+  "stale_days": 1,
+  "live_enabled": true
+}

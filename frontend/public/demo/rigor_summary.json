@@ -1,0 +1,33 @@
+{
+  "principles": [
+    {
+      "id": "code-decides",
+      "title": "Code decides the numbers, AI explains them",
+      "detail": "Allocation percentages and dollar amounts always come from deterministic rules; the LLM only narrates what the rules already computed."
+    },
+    {
+      "id": "number-check",
+      "title": "Every number is checked against a sourced Fact before it's shown",
+      "detail": "Each figure in an explanation or answer is matched against the Facts list and rejected or regenerated if it doesn't match."
+    },
+    {
+      "id": "sim-clock",
+      "title": "Nothing after the simulation date is ever visible",
+      "detail": "Prices, rates, and news are clipped to the current simulated date so the demo never leaks future information."
+    },
+    {
+      "id": "guardrails",
+      "title": "Guardrails block questions outside the plan's scope",
+      "detail": "Off-topic or unsafe questions are filtered before they ever reach the LLM, and the block is logged to the audit trail."
+    },
+    {
+      "id": "audit-trail",
+      "title": "Every step is logged to an audit trail",
+      "detail": "Parses, builds, checks, and answers all emit an audit event so the pipeline behind any shown number can be traced."
+    }
+  ],
+  "tests": {
+    "backend": 42,
+    "redteam_cases": 12
+  }
+}

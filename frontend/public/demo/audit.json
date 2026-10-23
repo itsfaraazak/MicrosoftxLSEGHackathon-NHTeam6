@@ -1,0 +1,67 @@
+{
+  "events": [
+    {
+      "id": "evt_001",
+      "kind": "guardrail",
+      "ts": "2022-01-05T09:12:03Z",
+      "summary": "Blocked an out-of-scope question (\"should I buy a house\") — outside the plan's scope.",
+      "payload": { "question": "should I buy a house", "action": "blocked" }
+    },
+    {
+      "id": "evt_002",
+      "kind": "parse",
+      "ts": "2022-01-05T09:12:05Z",
+      "summary": "Parsed free-text profile into structured fields via LLM.",
+      "payload": { "fields_extracted": 11, "model": "gpt-4o-mini" }
+    },
+    {
+      "id": "evt_003",
+      "kind": "contradiction_check",
+      "ts": "2022-01-05T09:12:06Z",
+      "summary": "No contradictions found between stated risk tolerance and holdings.",
+      "payload": { "contradictions": [] }
+    },
+    {
+      "id": "evt_004",
+      "kind": "portfolio_build",
+      "ts": "2022-01-05T09:12:11Z",
+      "summary": "Built portfolio from allocation rules: 60% safe / 40% growth.",
+      "payload": { "safe_bucket_usd": 60000, "growth_bucket_usd": 40000 }
+    },
+    {
+      "id": "evt_005",
+      "kind": "number_check",
+      "ts": "2022-01-05T09:12:12Z",
+      "summary": "Checked 6 numbers in the explanation against sourced Facts; 0 rejected.",
+      "payload": { "numbers_checked": 6, "rejected": [], "retries": 0 }
+    },
+    {
+      "id": "evt_006",
+      "kind": "ask",
+      "ts": "2022-06-14T15:40:21Z",
+      "summary": "Answered \"why do I own XLK?\" using facts_used from the current plan.",
+      "payload": { "facts_used": ["job_overlap", "tech_overlap"] }
+    },
+    {
+      "id": "evt_007",
+      "kind": "number_check",
+      "ts": "2022-06-14T15:40:22Z",
+      "summary": "Checked 2 numbers in the answer; 1 rejected and regenerated once.",
+      "payload": { "numbers_checked": 2, "rejected": ["job_overlap=0.9"], "retries": 1 }
+    },
+    {
+      "id": "evt_008",
+      "kind": "replay",
+      "ts": "2022-11-02T08:05:44Z",
+      "summary": "Detected a 23% drawdown in the growth bucket; suggested action: hold.",
+      "payload": { "drawdown_pct": 23, "suggested_action": "hold" }
+    },
+    {
+      "id": "evt_009",
+      "kind": "audit",
+      "ts": "2023-03-19T12:00:00Z",
+      "summary": "Daily audit sweep: 142 events logged, 0 guardrail failures.",
+      "payload": { "events_logged": 142, "guardrail_failures": 0 }
+    }
+  ]
+}
