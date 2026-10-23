@@ -16,3 +16,7 @@ Done: ai/functions.py (parse_profile, map_exposure, explain, answer, coach), gua
 In progress: none. Next: live Azure smoke test, AI-security coach review, wire A.build/C.coach at 14:30, Ask panel UI.
 Blockers: Azure endpoint + deployment name + key meaning.
 Requests: A (Prince) — export `engine.portfolio.build(profile, exposure, sim_date) -> (Portfolio, list[Fact])`; I call `ai.functions.map_exposure(profile)` for the ExposureMap. C — call `ai.functions.coach(event, facts)` per GuardEvent.
+
+## 2026-10-23 14:15 · Faraaz · B AI layer (live)
+Done: AI layer verified on the real portal over HTTP (parse 13s, ask 7s, leak/injection/distress refused in ms); red-team hardening; empty-profile bug fixed; docs in docs/context/AI-LAYER.md.
+Next: switch parse to a faster model if needed; wire A.build + C.coach; mount AskPanel in portfolio page (frontend owner); frontend branch not on GitHub yet.
