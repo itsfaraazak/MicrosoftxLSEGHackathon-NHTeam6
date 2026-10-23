@@ -34,11 +34,11 @@ Full original plan: `materials/Hackathon build plan Don't Double Down.pdf`. Judg
 - Frontend: `cd frontend && npm run dev` (port 3000). Set `NEXT_PUBLIC_API_URL` in `.env.local`.
 - Tests: `cd backend && python -m pytest -q`. Lint: `ruff check .` / `npm run lint`. Types: `npx tsc --noEmit`.
 
-## Ownership (one person per area, avoid cross-edits)
-- Person 1 Frontend: `frontend/**`
-- Person 2 Backend core: `backend/app.py`, `backend/engine/**`, `backend/mocks/**`, `backend/data/**`
-- Person 3 AI layer + pitch: `backend/ai/**`, slides, Q&A
-- Shared contract (change only with all three agreeing, log in `docs/decisions.md`): `docs/api-contract.md`, data model in `docs/context/PROJECT.md`
+## Ownership (3 full-feature slices; details and interfaces in `docs/BACKEND-PLAN.md`; start with `/start-slice A|B|C`)
+- A Portfolio Engine: `backend/engine/{data_clock,exposure,portfolio}.py`, `backend/data/**`, `routes/portfolio_routes.py`, `frontend/app/portfolio/**`
+- B AI Layer + pitch: `backend/ai/**`, `routes/ai_routes.py`, `frontend/app/page.tsx`, Ask panel, slides, Q&A
+- C Time Machine: `backend/engine/{guard,agent}.py`, `backend/db/**`, `routes/timemachine_routes.py`, `frontend/app/replay/**`
+- Shared contract (change only with all three agreeing, log in `docs/decisions.md`): `backend/models.py`, `docs/api-contract.md`, `backend/mocks/**`
 
 ## Style
 Match surrounding code. Python: type hints, pydantic models for shared objects, small pure functions. TS: strict, types

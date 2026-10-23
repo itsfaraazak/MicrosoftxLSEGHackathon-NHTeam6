@@ -1,6 +1,4 @@
 import pandas as pd
-import pytest
-
 from ai.number_check import Fact, check
 from engine import data_clock
 
