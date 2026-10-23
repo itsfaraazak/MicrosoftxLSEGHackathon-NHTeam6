@@ -61,7 +61,7 @@ def map_exposure(profile: Profile) -> ExposureMap:
     try:
         raw = _json(llm.chat(SIM_START, prompt, json_mode=True)).get("sectors", {})
         sectors = {s: min(max(float(w), 0.0), 1.0) for s, w in raw.items() if s in guardrails.SECTORS}
-    except Exception:
+    except Exception:  # noqa: BLE001 - any LLM/network/parse failure falls back to keywords
         sectors = {}
     if not sectors:
         sectors, source = fallback_exposure(profile.job_title, profile.industry, profile.employer), "keyword-fallback"
@@ -76,8 +76,8 @@ def _facts_prompt(facts: list[Fact]) -> str:
 
 def _template_explanation(portfolio: Portfolio, facts: list[Fact]) -> str:
     """Deterministic fallback: only numbers straight from code, so it always passes the check."""
-    lines = [f"As of {portfolio.sim_date}, ${portfolio.safe_bucket_usd:,.0f} is in the safe bucket and "
-             f"${portfolio.growth_bucket_usd:,.0f} in the growth bucket."]
+    lines = [(f"As of {portfolio.sim_date}, ${portfolio.safe_bucket_usd:,.0f} is in the safe bucket and "
+              f"${portfolio.growth_bucket_usd:,.0f} in the growth bucket.")]
     for p in portfolio.positions:
         why = "; ".join(f"{f.id} {f.value:g}{f.unit}" for f in p.reason_facts) or "diversification"
         lines.append(f"{p.ticker}: ${p.amount_usd:,.0f} ({why}).")
