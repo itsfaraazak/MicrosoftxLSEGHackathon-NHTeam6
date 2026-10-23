@@ -1,0 +1,1 @@
+Read CLAUDE.md, docs/context/PROJECT.md, docs/context/RUBRIC.md, docs/decisions.md and the last 5 entries of docs/HANDOFF.md, plus `git log --oneline -15` if this is a git repo. Then report in <10 lines: where the team is, what is blocked, and what the next most valuable task is for the area I own ($ARGUMENTS if given). Do not change files.

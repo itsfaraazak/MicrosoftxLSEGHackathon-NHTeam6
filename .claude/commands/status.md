@@ -1,0 +1,1 @@
+Compare the current time against the plan timeline in docs/context/PROJECT.md and the hackathon schedule (freeze 14:45, ready 15:30, Round 1 16:00, final 17:00). Check which endpoints in docs/api-contract.md are still mocked (USE_MOCKS paths in backend/app.py) and which screens work. Output a short checklist and the cut decision (drop Autopilot at 13:30, drop Ask at 14:30).

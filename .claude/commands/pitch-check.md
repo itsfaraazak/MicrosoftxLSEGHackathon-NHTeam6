@@ -1,0 +1,1 @@
+Score our pitch and product against docs/context/RUBRIC.md, 1-10 per criterion with one concrete improvement each. Check the architecture slide names every Azure service in docs/context/AZURE.md that is really wired. Flag any claim we cannot demo or back with a Fact. $ARGUMENTS

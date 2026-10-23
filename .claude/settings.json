@@ -1,0 +1,6 @@
+{
+  "permissions": {
+    "deny": ["Read(./**/.env)", "Read(./**/.env.*)", "Read(./**/*.heic)", "Read(./**/IMG_*)"],
+    "allow": ["Bash(npm run *)", "Bash(npx tsc *)", "Bash(npx shadcn@*)", "Bash(pytest *)", "Bash(ruff *)"]
+  }
+}

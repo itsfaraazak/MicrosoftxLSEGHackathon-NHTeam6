@@ -1,0 +1,1 @@
+Run: `cd backend && .venv/bin/python -m pytest -q && .venv/bin/ruff check .`, then `cd frontend && npx tsc --noEmit && npm run lint`. Report failures with file:line and fix those in my area only. Confirm no code reads price CSVs outside engine/data_clock.py (grep for read_csv).

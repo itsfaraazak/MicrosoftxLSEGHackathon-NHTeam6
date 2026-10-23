@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+!.env.local.example
+.venv/
+__pycache__/
+node_modules/
+.next/
+backend/data/*.csv
+backend/data/local_store.jsonl
+.claude/settings.local.json
+.DS_Store
+# Credential sheets / screenshots of them must never be committed
+*.heic
+IMG_*

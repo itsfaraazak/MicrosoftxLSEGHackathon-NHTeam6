@@ -1,0 +1,1 @@
+Append an entry to the BOTTOM of docs/HANDOFF.md: `## <date time> · <person> · <area>` with Done / In progress / Next / Blockers / Files touched, based on this session. If any decision was made, append a line to docs/decisions.md. If the API contract or shared data model changed, confirm docs/api-contract.md and docs/context/PROJECT.md are updated. Never include secrets.

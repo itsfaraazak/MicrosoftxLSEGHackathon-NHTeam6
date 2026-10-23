@@ -1,0 +1,12 @@
+{
+  "answer": "You hold little tech because your job already depends on it: 31% overlap.",
+  "facts_used": [
+    {
+      "id": "tech_overlap",
+      "value": 31,
+      "unit": "%",
+      "source": "yfinance",
+      "as_of": "2022-01-03"
+    }
+  ]
+}

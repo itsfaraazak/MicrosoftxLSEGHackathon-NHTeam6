@@ -1,0 +1,135 @@
+{
+  "months": [
+    {
+      "date": "2022-01-01",
+      "ours": 100000,
+      "tech_heavy": 100000
+    },
+    {
+      "date": "2022-02-01",
+      "ours": 98950,
+      "tech_heavy": 97200
+    },
+    {
+      "date": "2022-03-01",
+      "ours": 97900,
+      "tech_heavy": 94400
+    },
+    {
+      "date": "2022-04-01",
+      "ours": 96850,
+      "tech_heavy": 91600
+    },
+    {
+      "date": "2022-05-01",
+      "ours": 95800,
+      "tech_heavy": 88800
+    },
+    {
+      "date": "2022-06-01",
+      "ours": 94750,
+      "tech_heavy": 86000
+    },
+    {
+      "date": "2022-07-01",
+      "ours": 93700,
+      "tech_heavy": 83200
+    },
+    {
+      "date": "2022-08-01",
+      "ours": 92650,
+      "tech_heavy": 80400
+    },
+    {
+      "date": "2022-09-01",
+      "ours": 91600,
+      "tech_heavy": 77600
+    },
+    {
+      "date": "2022-10-01",
+      "ours": 90550,
+      "tech_heavy": 74800
+    },
+    {
+      "date": "2022-11-01",
+      "ours": 89500,
+      "tech_heavy": 72000
+    },
+    {
+      "date": "2022-12-01",
+      "ours": 90100,
+      "tech_heavy": 73700
+    },
+    {
+      "date": "2023-01-01",
+      "ours": 90700,
+      "tech_heavy": 75400
+    },
+    {
+      "date": "2023-02-01",
+      "ours": 91300,
+      "tech_heavy": 77100
+    },
+    {
+      "date": "2023-03-01",
+      "ours": 91900,
+      "tech_heavy": 78800
+    },
+    {
+      "date": "2023-04-01",
+      "ours": 92500,
+      "tech_heavy": 80500
+    },
+    {
+      "date": "2023-05-01",
+      "ours": 93100,
+      "tech_heavy": 82200
+    },
+    {
+      "date": "2023-06-01",
+      "ours": 93700,
+      "tech_heavy": 83900
+    },
+    {
+      "date": "2023-07-01",
+      "ours": 94300,
+      "tech_heavy": 85600
+    },
+    {
+      "date": "2023-08-01",
+      "ours": 94900,
+      "tech_heavy": 87300
+    },
+    {
+      "date": "2023-09-01",
+      "ours": 95500,
+      "tech_heavy": 89000
+    },
+    {
+      "date": "2023-10-01",
+      "ours": 96100,
+      "tech_heavy": 90700
+    },
+    {
+      "date": "2023-11-01",
+      "ours": 96700,
+      "tech_heavy": 92400
+    },
+    {
+      "date": "2023-12-01",
+      "ours": 97300,
+      "tech_heavy": 94100
+    }
+  ],
+  "events": [
+    {
+      "sim_date": "2022-06-01",
+      "drawdown_pct": -9.8,
+      "market_wide": true,
+      "cost_of_selling_usd": 9800,
+      "goal_years_away": 4.5,
+      "suggested_action": "hold",
+      "coach_message": "Your portfolio is down 9.8%. This is market-wide, not specific to your holdings. Your deposit money is safe in Treasuries. Selling now would lock in $9,800."
+    }
+  ]
+}
