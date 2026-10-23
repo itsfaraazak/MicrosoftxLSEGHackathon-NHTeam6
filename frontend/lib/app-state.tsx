@@ -33,6 +33,8 @@ type AppState = {
   setClock: (c: SimClock) => void;
   resetDemo: () => void;
   clearAllCaches: () => void;
+  // Bumped on every reset so views remount and drop their local state.
+  epoch: number;
 };
 
 const Ctx = createContext<AppState | null>(null);
@@ -64,6 +66,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const parsed = useStoredJson("parsed", parseParsed);
   const plan = useStoredJson("plan", parsePlan);
   const [clock, setClock] = useState<SimClock>(INITIAL_CLOCK);
+  const [epoch, setEpoch] = useState(0);
 
   // Reset demo: current session only. The demo-prep cache stays so Compare is instant after a reset.
   const resetDemo = useCallback(() => {
@@ -71,6 +74,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== "demo-prep" && q.queryKey[0] !== "health" });
     queryClient.getMutationCache().clear();
     setClock(INITIAL_CLOCK);
+    setEpoch((n) => n + 1);
   }, [queryClient]);
 
   const clearAllCaches = useCallback(() => {
@@ -78,6 +82,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     resetDemoPrepStatus();
     queryClient.clear();
     setClock(INITIAL_CLOCK);
+    setEpoch((n) => n + 1);
   }, [queryClient]);
 
   const value = useMemo<AppState>(
@@ -94,8 +99,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setClock,
       resetDemo,
       clearAllCaches,
+      epoch,
     }),
-    [persona, parsed, profile, plan, clock, resetDemo, clearAllCaches],
+    [persona, parsed, profile, plan, clock, resetDemo, clearAllCaches, epoch],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

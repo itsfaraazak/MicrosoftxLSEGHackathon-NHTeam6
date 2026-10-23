@@ -8,6 +8,7 @@ import { AskView } from "@/components/views/ask-view";
 import { PortfolioView } from "@/components/views/portfolio-view";
 import { ProfileView } from "@/components/views/profile-view";
 import { ReplayView } from "@/components/views/replay-view";
+import { useAppState } from "@/lib/app-state";
 import { isTypingTarget } from "@/lib/shortcuts";
 import { goToView, VIEWS, viewIndex, type ViewId } from "@/lib/views";
 
@@ -23,6 +24,7 @@ const ORBIT_VIEWS: OrbitView[] = VIEWS.map((v) => ({ id: v.id, title: v.title, c
 export function OrbitApp() {
   const searchParams = useSearchParams();
   const active = viewIndex(searchParams.get("view"));
+  const { resetDemo, epoch } = useAppState();
 
   // Native history updates are picked up by useSearchParams without a server round trip.
   const select = useCallback((i: number) => {
@@ -34,7 +36,10 @@ export function OrbitApp() {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target)) return;
-      if (e.key === "ArrowRight") select(active + 1);
+      if (e.key === "R" && e.shiftKey) {
+        resetDemo();
+        goToView("profile");
+      } else if (e.key === "ArrowRight") select(active + 1);
       else if (e.key === "ArrowLeft") select(active - 1);
       else if (/^[1-4]$/.test(e.key)) select(Number(e.key) - 1);
       else return;
@@ -42,12 +47,12 @@ export function OrbitApp() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [active, select]);
+  }, [active, select, resetDemo]);
 
   return (
     <>
       <DemoPrep />
-      <Orbit views={ORBIT_VIEWS} active={active} onSelect={select} />
+      <Orbit key={epoch} views={ORBIT_VIEWS} active={active} onSelect={select} />
       <Dock active={active} onSelect={select} />
     </>
   );
