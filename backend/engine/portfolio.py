@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Dict, List, Tuple
 
 from engine.exposure import ETF_SECTOR_WEIGHTS, overlap
 from models import ExposureMap, Fact, Portfolio, Position, Profile
@@ -33,7 +32,7 @@ def safe_bucket_amount(profile: Profile, total_assets: float) -> float:
 # ---------------------------------------------------------------------------
 # Rule 3: risk mix in growth bucket
 # ---------------------------------------------------------------------------
-def risk_mix(risk_tolerance: str, contradictions: List[str]) -> Tuple[float, float]:
+def risk_mix(risk_tolerance: str, contradictions: list[str]) -> tuple[float, float]:
     """Return (stock_pct, bond_pct). Contradiction steps down one risk level."""
     mixes = {
         "low": (0.4, 0.6),
@@ -56,13 +55,13 @@ def allocate_stocks(
     stock_usd: float,
     exposure: ExposureMap,
     sim_d: date,
-) -> Tuple[List[Position], List[Fact]]:
+) -> tuple[list[Position], list[Fact]]:
     """Sector ETFs + international. Halve sectors present in client exposure."""
     if stock_usd <= 0:
         return [], []
 
-    positions: List[Position] = []
-    facts: List[Fact] = []
+    positions: list[Position] = []
+    facts: list[Fact] = []
 
     # Fixed sleeve weights inside the stock portion
     intl_weight = 0.30
@@ -95,7 +94,7 @@ def allocate_stocks(
         facts.append(f)
 
     # Sector sleeve: equal weight, halved for exposed sectors
-    raw: Dict[str, float] = {}
+    raw: dict[str, float] = {}
     for sector in SECTOR_ETF:
         w = 1.0 / len(SECTOR_ETF)
         if sector in exposure.sectors:
@@ -126,7 +125,7 @@ def allocate_stocks(
 # ---------------------------------------------------------------------------
 # Rule 5: caps (pure, currently a pass-through so the demo total stays 100k)
 # ---------------------------------------------------------------------------
-def apply_caps(positions: List[Position], total_assets: float) -> List[Position]:
+def apply_caps(positions: list[Position], total_assets: float) -> list[Position]:
     """Rule 5: no ETF > 25%. For the demo we keep the total intact; this hook
     is where redistribution would go."""
     return positions
@@ -135,12 +134,12 @@ def apply_caps(positions: List[Position], total_assets: float) -> List[Position]
 # ---------------------------------------------------------------------------
 # Overlap score + baseline
 # ---------------------------------------------------------------------------
-def compute_overlap_score(positions: List[Position], exposure: ExposureMap) -> float:
+def compute_overlap_score(positions: list[Position], exposure: ExposureMap) -> float:
     total = sum(p.amount_usd for p in positions)
     if total <= 0 or not exposure.sectors:
         return 0.0
 
-    portfolio_sectors: Dict[str, float] = {}
+    portfolio_sectors: dict[str, float] = {}
     for pos in positions:
         weights = ETF_SECTOR_WEIGHTS.get(pos.ticker, {})
         for sec, w in weights.items():
@@ -168,7 +167,7 @@ def build(
     profile: Profile,
     exposure: ExposureMap,
     sim_date: str,
-) -> Tuple[Portfolio, List[Fact]]:
+) -> tuple[Portfolio, list[Fact]]:
     sim_d = date.fromisoformat(sim_date)
     total_assets = TOTAL_ASSETS_USD
 
@@ -179,8 +178,8 @@ def build(
     stock_usd = growth_usd * stock_pct
     bond_usd = growth_usd * bond_pct
 
-    positions: List[Position] = []
-    facts: List[Fact] = []
+    positions: list[Position] = []
+    facts: list[Fact] = []
 
     # Safe bucket
     if safe_usd > 0:
@@ -222,7 +221,7 @@ def build(
 
 
 # Extra fields that the route can merge into the JSON response without touching models.py
-def extra_fields(portfolio: Portfolio, exposure: ExposureMap) -> Dict:
+def extra_fields(portfolio: Portfolio, exposure: ExposureMap) -> dict:
     return {
         "baseline_overlap_score": baseline_overlap(exposure),
         "positions": [

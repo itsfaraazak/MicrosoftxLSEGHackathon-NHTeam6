@@ -29,3 +29,20 @@ def test_mocks_match_models():
         model = Portfolio(**pf)
         assert model.baseline_overlap_score is not None and model.baseline_overlap_score > model.overlap_score
         assert all(p.reason for p in model.positions)
+
+
+def test_portfolio_falls_back_to_mock_when_engine_missing(monkeypatch):
+    from routes import portfolio_routes
+    monkeypatch.setenv("USE_MOCKS", "0")
+    monkeypatch.setattr(portfolio_routes, "_engine", lambda: None)
+    r = app.test_client().post("/api/portfolio", json={})
+    assert r.status_code == 200 and r.headers["X-Source"] == "mock"
+
+
+def test_rate_limit(monkeypatch):
+    import app as app_module
+    monkeypatch.setenv("RATE_LIMIT_PER_MIN", "2")
+    app_module._hits.clear()
+    codes = [app.test_client().post("/api/ask", json={}, headers={"X-Forwarded-For": "9.9.9.9"}).status_code
+             for _ in range(3)]
+    assert codes == [200, 200, 429]

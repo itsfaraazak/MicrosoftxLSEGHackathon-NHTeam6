@@ -1,7 +1,8 @@
 import os
+import time
 
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 load_dotenv()
@@ -19,6 +20,25 @@ except ImportError:  # proof feature not present in this checkout
     proof_routes = None
 if proof_routes:
     app.register_blueprint(proof_routes.bp)
+
+
+_hits: dict[str, list[float]] = {}
+LIMITED = ("/api/ask", "/api/profile/parse", "/api/portfolio")
+
+
+@app.before_request
+def rate_limit():
+    """Public demo URL: cap LLM-backed routes per client (60/min) so a stray loop can't burn the team key."""
+    if request.path not in LIMITED:
+        return None
+    ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "?").split(",")[0].strip()
+    now = time.monotonic()
+    window = [t for t in _hits.get(ip, []) if now - t < 60]
+    if len(window) >= int(os.getenv("RATE_LIMIT_PER_MIN", "60")):
+        return jsonify({"error": "Too many requests, slow down", "fallback": True}), 429
+    window.append(now)
+    _hits[ip] = window
+    return None
 
 
 @app.get("/api/health")
