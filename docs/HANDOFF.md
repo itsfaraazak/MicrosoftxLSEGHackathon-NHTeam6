@@ -18,3 +18,6 @@ Requests for P2/P3 (all optional on the frontend side; UI works without them):
 6. P2 · Facts for bucket totals (`safe_bucket_usd`, `growth_bucket_usd`) so they can carry provenance like positions do.
 7. P2/P3 · Return JSON error bodies (`{"error": "..."}` with a status), not HTML 500s / NotImplementedError pages.
 Files touched: docs/frontend-plan.md, docs/decisions.md, docs/HANDOFF.md
+
+## 2026-10-23 · P1 (Bipin) · Mac port note
+On Macs, port 5000 clashes with AirPlay Receiver. Turn it off in System Settings → General → AirDrop & Handoff, or run Flask with FLASK_PORT=5001 and set NEXT_PUBLIC_API_URL to match.

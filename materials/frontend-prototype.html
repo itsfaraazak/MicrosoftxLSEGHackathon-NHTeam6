@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Don’t Double Down</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: light;
+  --bg: #E7EAF7;
+  --bg2: #D5DBF3;
+  --panel: rgba(255, 255, 255, 0.74);
+  --panel-solid: #F7F8FE;
+  --tile: rgba(20, 28, 74, 0.05);
+  --tile-hover: rgba(20, 28, 74, 0.09);
+  --ink: #121838;
+  --muted: #4F5784;
+  --line: rgba(18, 24, 56, 0.14);
+  --ion: #3550E8;
+  --ion-soft: rgba(53, 80, 232, 0.12);
+  --plan: #0B8F80;
+  --compare: #8389B3;
+  --warn: #9A6412;
+  --warn-bg: rgba(242, 193, 78, 0.22);
+  --warn-line: rgba(183, 121, 31, 0.45);
+  --glow1: rgba(53, 80, 232, 0.22);
+  --glow2: rgba(11, 143, 128, 0.16);
+  --grid: rgba(53, 80, 232, 0.13);
+  --shadow: 0 30px 80px rgba(20, 28, 74, 0.18);
+  --c1: #3550E8; --c2: #0B8F80; --c3: #B7791F; --c4: #7B4FD6; --c5: #1E88C7;
+  --c6: #C8553D; --c7: #3F8F3A; --c8: #A9842B; --c9: #6B7196;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0B1130;
+    --bg2: #141C4B;
+    --panel: rgba(23, 31, 78, 0.64);
+    --panel-solid: #161E4C;
+    --tile: rgba(255, 255, 255, 0.05);
+    --tile-hover: rgba(255, 255, 255, 0.09);
+    --ink: #EEF1FF;
+    --muted: #A6ADD6;
+    --line: rgba(170, 182, 255, 0.18);
+    --ion: #8EA6FF;
+    --ion-soft: rgba(142, 166, 255, 0.14);
+    --plan: #4FD8C4;
+    --compare: #8C93C2;
+    --warn: #F2C14E;
+    --warn-bg: rgba(242, 193, 78, 0.12);
+    --warn-line: rgba(242, 193, 78, 0.45);
+    --glow1: rgba(110, 130, 255, 0.34);
+    --glow2: rgba(79, 216, 196, 0.16);
+    --grid: rgba(142, 166, 255, 0.15);
+    --shadow: 0 40px 100px rgba(0, 0, 0, 0.45);
+    --c1: #8EA6FF; --c2: #4FD8C4; --c3: #F2C14E; --c4: #C49BFF; --c5: #6FC3FF;
+    --c6: #FF9F8E; --c7: #9BE38B; --c8: #FFD38E; --c9: #B8BEE6;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0B1130;
+  --bg2: #141C4B;
+  --panel: rgba(23, 31, 78, 0.64);
+  --panel-solid: #161E4C;
+  --tile: rgba(255, 255, 255, 0.05);
+  --tile-hover: rgba(255, 255, 255, 0.09);
+  --ink: #EEF1FF;
+  --muted: #A6ADD6;
+  --line: rgba(170, 182, 255, 0.18);
+  --ion: #8EA6FF;
+  --ion-soft: rgba(142, 166, 255, 0.14);
+  --plan: #4FD8C4;
+  --compare: #8C93C2;
+  --warn: #F2C14E;
+  --warn-bg: rgba(242, 193, 78, 0.12);
+  --warn-line: rgba(242, 193, 78, 0.45);
+  --glow1: rgba(110, 130, 255, 0.34);
+  --glow2: rgba(79, 216, 196, 0.16);
+  --grid: rgba(142, 166, 255, 0.15);
+  --shadow: 0 40px 100px rgba(0, 0, 0, 0.45);
+  --c1: #8EA6FF; --c2: #4FD8C4; --c3: #F2C14E; --c4: #C49BFF; --c5: #6FC3FF;
+  --c6: #FF9F8E; --c7: #9BE38B; --c8: #FFD38E; --c9: #B8BEE6;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  overflow: hidden;
+}
+.app { position: relative; height: 100%; display: flex; flex-direction: column; isolation: isolate; }
+
+/* Atmosphere: glows + a perspective floor grid */
+.app::before {
+  content: "";
+  position: absolute; inset: 0; z-index: -2;
+  background:
+    radial-gradient(60% 50% at 50% 38%, var(--glow1), transparent 70%),
+    radial-gradient(40% 35% at 78% 80%, var(--glow2), transparent 70%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+}
+.floor {
+  position: absolute; left: -50%; right: -50%; bottom: -10%; height: 60%;
+  z-index: -1; pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: perspective(700px) rotateX(68deg);
+  transform-origin: 50% 0;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 35%, #000 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 35%, #000 70%, transparent 100%);
+}
+
+/* Top bar */
+.topbar {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  gap: 16px; padding: 18px 28px 6px;
+}
+.brand { display: flex; align-items: center; gap: 12px; font-family: "Unbounded", "Manrope", sans-serif; font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
+.brand-mark { width: 30px; height: 30px; flex: none; }
+.clock {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 16px 8px 10px; border-radius: 999px;
+  background: var(--panel); border: 1px solid var(--line);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+.clock-dial { width: 26px; height: 26px; flex: none; }
+.clock-text { display: flex; flex-direction: column; line-height: 1.2; }
+.clock-date { font-weight: 700; font-size: 14px; }
+.clock-sub { font-size: 11.5px; color: var(--muted); }
+.topbar-right { display: flex; justify-content: flex-end; }
+.theme-btn {
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  border-radius: 999px; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+
+/* Stage + 3D carousel */
+.stage {
+  position: relative; flex: 1; min-height: 0;
+  perspective: 2200px; perspective-origin: 50% 40%;
+  --pw: min(1000px, 84vw);
+  --side: min(66vw, 760px);
+}
+.ring { position: absolute; inset: 0; transform-style: preserve-3d; overflow: visible; }
+.stage, .app { overflow: clip; }
+.panel {
+  position: absolute; left: 50%; top: 10px; bottom: 16px;
+  width: var(--pw);
+  border-radius: 28px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+  transform-origin: 50% 50%;
+  transition: transform 900ms cubic-bezier(0.22, 0.9, 0.24, 1), opacity 700ms ease, filter 700ms ease;
+  will-change: transform;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.panel.is-side { cursor: pointer; filter: saturate(0.7); }
+.panel.is-side:hover { filter: saturate(1); }
+.panel.is-side .panel-body { pointer-events: none; }
+.panel.is-hidden { pointer-events: none; }
+.panel-head {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  padding: 26px 32px 18px; border-bottom: 1px solid var(--line);
+}
+.panel-head h2 {
+  margin: 0; font-family: "Unbounded", "Manrope", sans-serif; font-weight: 600;
+  font-size: clamp(20px, 2.3vw, 30px); line-height: 1.15; letter-spacing: -0.02em;
+}
+.panel-head p { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
+.panel-body { flex: 1; min-height: 0; overflow-y: auto; padding: 24px 32px 32px; }
+
+/* Dock */
+.dock {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 4px 16px 18px;
+}
+.dock-nav {
+  display: flex; gap: 4px; padding: 5px; border-radius: 999px;
+  background: var(--panel); border: 1px solid var(--line);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+.dock-nav button, .arrow {
+  border: 0; background: transparent; color: var(--muted);
+  font: inherit; font-weight: 600; font-size: 14px;
+  padding: 9px 18px; border-radius: 999px; cursor: pointer;
+  transition: background 200ms ease, color 200ms ease;
+}
+.dock-nav button[aria-current="true"] { background: var(--ion); color: var(--panel-solid); }
+.dock-nav button:not([aria-current="true"]):hover { background: var(--tile-hover); color: var(--ink); }
+.arrow { width: 42px; height: 42px; padding: 0; border: 1px solid var(--line); background: var(--panel); color: var(--ink); display: grid; place-items: center; }
+.arrow svg { width: 18px; height: 18px; }
+:focus-visible { outline: 2px solid var(--ion); outline-offset: 3px; }
+
+/* Shared bits */
+.btn {
+  border: 0; border-radius: 14px; padding: 13px 20px; font: inherit; font-weight: 700;
+  cursor: pointer; background: var(--ion); color: var(--panel-solid);
+}
+.btn.ghost { background: var(--tile); color: var(--ink); border: 1px solid var(--line); }
+.btn:hover { filter: brightness(1.06); }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  background: var(--tile); border: 1px solid var(--line);
+  padding: 3px 10px; border-radius: 999px;
+}
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ion); }
+.tile { background: var(--tile); border: 1px solid var(--line); border-radius: 18px; padding: 18px; }
+.label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.big { font-family: "Unbounded", "Manrope", sans-serif; font-weight: 600; font-size: clamp(20px, 2.2vw, 28px); letter-spacing: -0.02em; line-height: 1.2; }
+.callout {
+  border: 1px solid var(--warn-line); background: var(--warn-bg);
+  border-radius: 18px; padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start;
+}
+.callout svg { flex: none; width: 22px; height: 22px; color: var(--warn); margin-top: 2px; }
+.callout strong { display: block; margin-bottom: 2px; }
+.note { font-size: 12.5px; color: var(--muted); }
+
+/* Profile */
+.persona-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.persona-btn {
+  border: 1px solid var(--line); background: var(--tile); color: var(--ink);
+  border-radius: 999px; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.persona-btn[aria-pressed="true"] { border-color: var(--ion); background: var(--ion-soft); }
+.form-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.field label, .field .label { font-size: 13px; font-weight: 600; color: var(--muted); }
+textarea, input, select {
+  font: inherit; color: var(--ink); background: var(--panel-solid);
+  border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; width: 100%;
+}
+textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  border: 1px solid var(--line); background: var(--panel-solid); color: var(--ink);
+  border-radius: 999px; padding: 8px 16px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.pill[aria-pressed="true"] { background: var(--ion); color: var(--panel-solid); border-color: var(--ion); }
+.build-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
+.amount { font-family: "Unbounded", "Manrope", sans-serif; font-weight: 600; font-size: 20px; }
+.parsing { display: none; align-items: center; gap: 10px; color: var(--muted); font-weight: 600; }
+.parsing.on { display: flex; }
+.spinner { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--ion); animation: spin 800ms linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#profile-result { margin-top: 18px; display: none; }
+#profile-result.on { display: block; }
+
+/* Portfolio */
+.tabs { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--tile); border: 1px solid var(--line); }
+.tabs button { border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 600; font-size: 13px; padding: 7px 14px; border-radius: 999px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--panel-solid); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+.stat .big { margin-top: 4px; }
+.stat .note { margin-top: 4px; }
+.overlap-bar { margin-top: 10px; height: 8px; border-radius: 99px; background: var(--line); position: relative; overflow: hidden; }
+.overlap-bar span { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--plan); transition: width 900ms cubic-bezier(0.22, 0.9, 0.24, 1); }
+.overlap-bar i { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--compare); }
+.plan-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
+.donut-wrap { position: relative; width: 100%; max-width: 300px; aspect-ratio: 1; margin: 0 auto; }
+.donut-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.donut-center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+.donut-center .big { font-size: 26px; }
+.holdings { display: flex; flex-direction: column; gap: 6px; }
+.holding {
+  display: grid; grid-template-columns: 12px 64px 1fr auto; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 14px; border: 1px solid transparent;
+  background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; width: 100%;
+}
+.holding:hover { background: var(--tile-hover); }
+.holding[aria-expanded="true"] { background: var(--tile); border-color: var(--line); }
+.swatch { width: 12px; height: 12px; border-radius: 4px; }
+.ticker { font-weight: 700; }
+.hname { color: var(--muted); font-size: 13.5px; }
+.hamt { font-weight: 700; font-variant-numeric: tabular-nums; }
+.bucket-tag { font-size: 11.5px; font-weight: 600; color: var(--muted); margin-left: 6px; }
+.why { margin: 2px 0 8px 26px; padding: 14px 16px; border-left: 2px solid var(--ion); background: var(--tile); border-radius: 0 14px 14px 0; display: none; }
+.why.on { display: block; }
+.why p { margin: 0 0 10px; }
+.facts { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.facts li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13.5px; }
+.compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.pcard { padding: 18px; border-radius: 20px; background: var(--tile); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.pcard h3 { margin: 0; font-family: "Unbounded", "Manrope", sans-serif; font-weight: 600; font-size: 17px; }
+.pcard .mini { width: 140px; height: 140px; margin: 4px auto; }
+.pcard .mini svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.pcard ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--muted); }
+.pcard .reason { font-weight: 600; }
+
+/* Time machine */
+.tm-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+.chart-tile { padding: 18px 18px 10px; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 18px; height: 3px; border-radius: 3px; display: inline-block; }
+.chart { width: 100%; height: auto; display: block; }
+.controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.month-label { font-family: "Unbounded", "Manrope", sans-serif; font-weight: 600; font-size: 16px; margin-left: 6px; }
+.values { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.coach {
+  border: 1px solid var(--warn-line); background: var(--warn-bg); border-radius: 20px; padding: 18px;
+  transform-origin: 100% 50%;
+}
+.coach.enter { animation: coach-in 600ms cubic-bezier(0.22, 0.9, 0.24, 1); }
+@keyframes coach-in { from { opacity: 0; transform: perspective(800px) rotateY(-28deg) translateX(24px); } to { opacity: 1; transform: none; } }
+.coach h3 { margin: 0 0 6px; font-size: 16px; }
+.coach p { margin: 0 0 12px; font-size: 14px; }
+.coach-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.coach-actions .btn { padding: 9px 14px; font-size: 13px; border-radius: 12px; }
+.link-btn { background: none; border: 0; color: var(--ion); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; padding: 4px 0; margin-top: 8px; text-decoration: underline; text-underline-offset: 3px; }
+.calm { border: 1px solid var(--line); background: var(--tile); border-radius: 20px; padding: 18px; }
+.calm h3 { margin: 0 0 6px; font-size: 16px; }
+.calm p { margin: 0; font-size: 14px; color: var(--muted); }
+.side-stack { display: flex; flex-direction: column; gap: 14px; }
+
+/* Ask */
+.chat { display: flex; flex-direction: column; gap: 14px; max-width: 760px; margin: 0 auto; }
+.msg { max-width: 82%; padding: 14px 16px; border-radius: 18px; }
+.msg.user { align-self: flex-end; background: var(--ion); color: var(--panel-solid); border-bottom-right-radius: 6px; }
+.msg.ai { align-self: flex-start; background: var(--tile); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
+.msg.ai p { margin: 0 0 10px; }
+.msg.ai .facts { margin-top: 4px; }
+.typing { display: inline-flex; gap: 4px; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1s infinite ease-in-out; }
+.typing i:nth-child(2) { animation-delay: 150ms; }
+.typing i:nth-child(3) { animation-delay: 300ms; }
+@keyframes blink { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+.suggest { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 8px 0 4px; }
+.suggest button { border: 1px solid var(--line); background: var(--panel-solid); color: var(--ink); border-radius: 999px; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.suggest button:hover { border-color: var(--ion); }
+.ask-bar { display: flex; gap: 10px; max-width: 760px; margin: 12px auto 0; }
+.ask-bar input { flex: 1; }
+
+.foot { text-align: center; font-size: 11.5px; color: var(--muted); padding: 0 16px 12px; }
+
+@media (max-width: 860px) {
+  .topbar { grid-template-columns: 1fr auto; padding: 14px 16px 4px; }
+  .topbar-right { display: none; }
+  .brand span { display: none; }
+  .stage { --pw: 92vw; --side: 96vw; }
+  .panel-head { padding: 20px 20px 14px; }
+  .panel-body { padding: 18px 20px 24px; }
+  .form-grid, .plan-grid, .tm-grid, .compare-grid, .stats { grid-template-columns: 1fr; }
+  .dock-nav button { padding: 8px 10px; font-size: 12.5px; white-space: nowrap; }
+  .dock { padding: 4px 8px 12px; }
+  .arrow { display: none; }
+  .msg { max-width: 92%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel { transition: opacity 250ms ease; }
+  .coach.enter { animation: none; }
+  .spinner, .typing i { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="floor" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 30 30" aria-hidden="true">
+        <circle cx="11" cy="15" r="8" fill="none" stroke="var(--ion)" stroke-width="2"/>
+        <circle cx="19" cy="15" r="8" fill="none" stroke="var(--plan)" stroke-width="2"/>
+      </svg>
+      <span>Don’t Double Down</span>
+    </div>
+    <div class="clock" role="status" aria-live="polite">
+      <svg class="clock-dial" viewBox="0 0 26 26" aria-hidden="true">
+        <circle cx="13" cy="13" r="11" fill="none" stroke="var(--line)" stroke-width="2"/>
+        <circle id="dial-arc" cx="13" cy="13" r="11" fill="none" stroke="var(--ion)" stroke-width="2" stroke-linecap="round" stroke-dasharray="0 70" transform="rotate(-90 13 13)"/>
+        <circle cx="13" cy="13" r="2.5" fill="var(--ion)"/>
+      </svg>
+      <div class="clock-text">
+        <span class="clock-date" id="sim-date">Simulation date: 3 Jan 2022</span>
+        <span class="clock-sub">Nothing after this date is visible</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="theme-btn" id="theme-btn" type="button">Switch theme</button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <div class="ring" id="ring">
+
+      <!-- Profile -->
+      <section class="panel" data-title="My profile" aria-label="My profile">
+        <div class="panel-head">
+          <div>
+            <h2>Tell us about your life</h2>
+            <p>Your job matters as much as your risk appetite. We use it to keep your savings from betting on the same thing as your paycheck.</p>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="persona-row" role="group" aria-label="Demo people">
+            <button class="persona-btn" type="button" data-persona="priya" aria-pressed="true">Priya, software engineer</button>
+            <button class="persona-btn" type="button" data-persona="tom" aria-pressed="false">Tom, NHS nurse</button>
+            <button class="persona-btn" type="button" data-persona="fiona" aria-pressed="false">Fiona, oil engineer</button>
+          </div>
+          <div class="form-grid">
+            <div>
+              <div class="field">
+                <label for="about">Describe yourself in your own words</label>
+                <textarea id="about"></textarea>
+              </div>
+              <div class="field">
+                <span class="label" id="drop-label">When markets dropped in 2020, what did you do?</span>
+                <div class="pills" role="group" aria-labelledby="drop-label" id="drop-pills">
+                  <button class="pill" type="button" data-v="sold">Sold everything</button>
+                  <button class="pill" type="button" data-v="held">Held on</button>
+                  <button class="pill" type="button" data-v="bought">Bought more</button>
+                  <button class="pill" type="button" data-v="none">Wasn’t investing</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="two">
+                <div class="field"><label for="age">Age</label><input id="age" type="number" min="18" max="100"></div>
+                <div class="field"><label for="industry">Industry</label>
+                  <select id="industry">
+                    <option>Technology</option><option>Healthcare</option><option>Energy</option><option>Financial services</option><option>Public sector</option><option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field"><label for="job">Job title and employer</label><input id="job" type="text"></div>
+              <div class="two">
+                <div class="field"><label for="emergency">Emergency savings (months)</label><input id="emergency" type="number" min="0" max="36"></div>
+                <div class="field"><label for="existing">Existing investments</label><input id="existing" type="text"></div>
+              </div>
+              <div class="field">
+                <span class="label" id="risk-label">How much risk are you comfortable with?</span>
+                <div class="pills" role="group" aria-labelledby="risk-label" id="risk-pills">
+                  <button class="pill" type="button" data-v="Low">Low</button>
+                  <button class="pill" type="button" data-v="Medium">Medium</button>
+                  <button class="pill" type="button" data-v="High">High</button>
+                </div>
+              </div>
+              <div class="field"><label for="goal">Main goal</label><input id="goal" type="text"></div>
+            </div>
+          </div>
+          <div class="build-row">
+            <button class="btn" id="build-btn" type="button">Build my portfolio</button>
+            <span class="amount">$100,000</span>
+            <span class="parsing" id="parsing"><span class="spinner" aria-hidden="true"></span>Reading your answers</span>
+          </div>
+          <div id="profile-result" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- Portfolio -->
+      <section class="panel" data-title="My portfolio" aria-label="My portfolio">
+        <div class="panel-head">
+          <div>
+            <h2 id="pf-title">Priya’s $100,000 plan</h2>
+            <p id="pf-sub">Built around a job in tech and a house deposit in five years.</p>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Portfolio views">
+            <button role="tab" type="button" id="tab-plan" aria-selected="true" aria-controls="view-plan">Plan</button>
+            <button role="tab" type="button" id="tab-compare" aria-selected="false" aria-controls="view-compare">Compare people</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="view-plan" role="tabpanel" aria-labelledby="tab-plan">
+            <div class="stats">
+              <div class="tile stat"><div class="label">Safe bucket</div><div class="big" id="st-safe"></div><div class="note" id="st-safe-note"></div></div>
+              <div class="tile stat"><div class="label">Growth bucket</div><div class="big" id="st-growth"></div><div class="note" id="st-growth-note"></div></div>
+              <div class="tile stat"><div class="label" id="st-overlap-label">Money tied to your job’s sector</div><div class="big" id="st-overlap"></div>
+                <div class="overlap-bar" aria-hidden="true"><span id="st-overlap-bar"></span><i id="st-overlap-mark"></i></div>
+                <div class="note" id="st-overlap-note"></div></div>
+            </div>
+            <div class="plan-grid">
+              <div class="donut-wrap">
+                <svg viewBox="0 0 120 120" id="donut" role="img" aria-label="Allocation chart"></svg>
+                <div class="donut-center"><div><div class="label">Invested</div><div class="big">$100,000</div></div></div>
+              </div>
+              <div>
+                <div class="label" style="margin-bottom:8px">Select a holding to see why it’s there</div>
+                <div class="holdings" id="holdings"></div>
+              </div>
+            </div>
+          </div>
+          <div id="view-compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
+            <p class="note" style="margin-top:0">Same $100,000, three different lives, three different plans.</p>
+            <div class="compare-grid" id="compare-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Time machine -->
+      <section class="panel" data-title="Time machine" aria-label="Time machine">
+        <div class="panel-head">
+          <div>
+            <h2>Replaying 2022, one month at a time</h2>
+            <p id="tm-sub">The chart only shows data up to the simulation date. The future stays hidden, for you and for the AI.</p>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="tm-grid">
+            <div class="tile chart-tile">
+              <div class="legend">
+                <span><i style="background:var(--plan)"></i>Priya’s plan</span>
+                <span><i style="background:var(--compare)"></i>Typical tech-heavy portfolio</span>
+              </div>
+              <svg class="chart" id="chart" viewBox="0 0 820 300" role="img" aria-label="Portfolio value over time"></svg>
+              <div class="controls">
+                <button class="btn ghost" type="button" id="tm-prev">Previous month</button>
+                <button class="btn" type="button" id="tm-next">Next month</button>
+                <button class="btn ghost" type="button" id="tm-reset">Back to 3 Jan 2022</button>
+                <span class="month-label" id="tm-month"></span>
+              </div>
+            </div>
+            <div class="side-stack">
+              <div class="values">
+                <div class="tile"><div class="label">Priya’s plan</div><div class="big" id="v-plan"></div></div>
+                <div class="tile"><div class="label">Tech-heavy</div><div class="big" id="v-tech"></div></div>
+              </div>
+              <div id="coach-slot" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ask -->
+      <section class="panel" data-title="Ask" aria-label="Ask">
+        <div class="panel-head">
+          <div>
+            <h2>Ask about your plan</h2>
+            <p>Every answer uses only the facts in your plan up to the simulation date, and shows where each number came from.</p>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chat" id="chat"></div>
+          <div class="suggest" id="suggest">
+            <button type="button" data-q="why">Why so little in my job’s sector?</button>
+            <button type="button" data-q="fall">What if markets fall 30%?</button>
+            <button type="button" data-q="sell">Should I sell?</button>
+            <button type="button" data-q="leak">What happens to tech stocks in 2022?</button>
+          </div>
+          <form class="ask-bar" id="ask-form">
+            <label for="ask-input" class="sr" style="position:absolute;left:-9999px">Your question</label>
+            <input id="ask-input" type="text" placeholder="Ask anything about your plan" autocomplete="off">
+            <button class="btn" type="submit">Ask</button>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <nav class="dock" aria-label="Views">
+    <button class="arrow" type="button" id="prev" aria-label="Previous view">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4.5 7 10l5.5 5.5"/></svg>
+    </button>
+    <div class="dock-nav" id="dock-nav"></div>
+    <button class="arrow" type="button" id="next" aria-label="Next view">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 4.5 13 10l-5.5 5.5"/></svg>
+    </button>
+  </nav>
+  <div class="foot">Educational hackathon project. Not financial advice. Paper money and demo data only.</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Demo data (replace with backend responses) ---------- */
+  const personas = {
+    priya: {
+      name: "Priya", age: 29, industry: "Technology", job: "Software engineer at a London fintech",
+      text: "I’m a software engineer at a London fintech. I get share options and already have about $15,000 in a tech fund through an app. I want a house deposit of $30,000 in about five years and to grow the rest for the long term.",
+      emergency: 4, existing: "$15,000 in QQQ, share options", risk: "High", drop: "sold", goal: "House deposit, $30,000 in 5 years",
+      sector: "tech", subtitle: "Built around a job in tech and a house deposit in five years.",
+      overlapFrom: 41, overlapTo: 18,
+      oneLine: "Less tech, because her salary and share options already depend on it.",
+      holdings: [
+        { t: "SHY", n: "Short-term US Treasuries", a: 20000, b: "safe", eq: false, why: "This is your house deposit. You need it in about five years, so it sits in short-term government bonds that barely move when shares fall.", f: [["Goal: $30,000 in 5 years", "Your profile"], ["Money needed within 5 years goes to the safe bucket", "Allocation rule 2"]] },
+        { t: "BIL", n: "US Treasury bills", a: 10000, b: "safe", eq: false, why: "The rest of your deposit money, in the shortest-term, steadiest bonds, so some of it is available quickly.", f: [["Goal: $30,000 in 5 years", "Your profile"], ["Money needed within 5 years goes to the safe bucket", "Allocation rule 2"]] },
+        { t: "VXUS", n: "International shares", a: 18000, b: "growth", eq: true, why: "Spreads your growth money beyond the US and away from the industry you work in.", f: [["Job-linked sectors cut by half, the rest spread elsewhere", "Allocation rule 4"], ["No fund above 25% of the portfolio", "Allocation rule 5"]] },
+        { t: "XLV", n: "US healthcare", a: 12000, b: "growth", eq: true, why: "Healthcare doesn’t rise and fall with your job, so it balances your existing tech exposure.", f: [["Your job sector: Technology", "Your profile"], ["Job-linked sectors cut by half, the rest spread elsewhere", "Allocation rule 4"]] },
+        { t: "XLP", n: "US consumer staples", a: 10000, b: "growth", eq: true, why: "Everyday essentials tend to hold up when tech has a bad year.", f: [["Job-linked sectors cut by half, the rest spread elsewhere", "Allocation rule 4"]] },
+        { t: "XLU", n: "US utilities", a: 8000, b: "growth", eq: true, why: "Steady businesses with little link to the tech job market.", f: [["Job-linked sectors cut by half, the rest spread elsewhere", "Allocation rule 4"]] },
+        { t: "XLI", n: "US industrials", a: 8000, b: "growth", eq: true, why: "Adds growth from a part of the economy your job doesn’t depend on.", f: [["Job-linked sectors cut by half, the rest spread elsewhere", "Allocation rule 4"]] },
+        { t: "BND", n: "Total US bonds", a: 8000, b: "growth", eq: false, why: "You said high risk, but you sold in 2020, so we stepped your risk down one level. These bonds cushion the growth bucket.", f: [["Stated risk: High; sold everything in March 2020", "Your profile"], ["Contradiction found: risk stepped down one level", "Allocation rule 3"]] },
+        { t: "XLK", n: "US technology", a: 6000, b: "growth", eq: true, why: "Kept small on purpose. Your salary and share options already depend on tech, so more tech here would double your bet.", f: [["Your job sector: Technology", "Your profile"], ["Job-linked sectors cut by half", "Allocation rule 4"], ["You already hold $15,000 in a tech fund", "Your profile"]] }
+      ],
+      askWhy: "Because your income already depends on tech. If tech has a bad year, your job and your savings could be hit together. We cut tech-linked funds by half and spread the difference across healthcare, consumer staples, utilities, industrials and international shares.",
+      askWhyFacts: [["Your job sector: Technology", "Your profile"], ["Job-linked sectors cut by half", "Allocation rule 4"], ["XLK: $6,000 of $100,000", "Your plan"]]
+    },
+    tom: {
+      name: "Tom", age: 41, industry: "Healthcare", job: "Nurse at an NHS hospital",
+      text: "I’m an NHS nurse. My job is stable and I’ve never invested before. I’d like to build up money for retirement in about 25 years.",
+      emergency: 6, existing: "None", risk: "Medium", drop: "none", goal: "Retirement in about 25 years",
+      sector: "healthcare", subtitle: "Built around a stable public-sector job and a 25-year horizon.",
+      overlapFrom: 13, overlapTo: 0,
+      oneLine: "No extra healthcare, because his job already sits there; stable income lets him hold more shares.",
+      holdings: [
+        { t: "VTI", n: "Total US shares", a: 25000, b: "growth", eq: true, why: "The core of a long-term plan. Your stable income means short-term drops matter less to you.", f: [["Retirement in about 25 years", "Your profile"], ["Medium risk: 60% shares, 40% bonds", "Allocation rule 3"]] },
+        { t: "VXUS", n: "International shares", a: 20000, b: "growth", eq: true, why: "Spreads your money beyond the US.", f: [["No fund above 25% of the portfolio", "Allocation rule 5"]] },
+        { t: "XLK", n: "US technology", a: 10000, b: "growth", eq: true, why: "Your job has no link to tech, so there’s no double bet here.", f: [["Your job sector: Healthcare", "Your profile"]] },
+        { t: "XLP", n: "US consumer staples", a: 5000, b: "growth", eq: true, why: "Steady everyday businesses, used instead of extra healthcare.", f: [["Job-linked sectors cut by half, the rest spread elsewhere", "Allocation rule 4"]] },
+        { t: "BND", n: "Total US bonds", a: 30000, b: "growth", eq: false, why: "Medium risk means about 40% in bonds to smooth the ride.", f: [["Medium risk: 60% shares, 40% bonds", "Allocation rule 3"]] },
+        { t: "TIP", n: "Inflation-protected Treasuries", a: 10000, b: "growth", eq: false, why: "Helps protect your long-term savings against rising prices.", f: [["Retirement in about 25 years", "Your profile"]] }
+      ],
+      askWhy: "Because your job is already in healthcare. A typical index fund holds some healthcare companies, so we didn’t add a separate healthcare fund and used consumer staples instead.",
+      askWhyFacts: [["Your job sector: Healthcare", "Your profile"], ["Job-linked sectors cut by half", "Allocation rule 4"]]
+    },
+    fiona: {
+      name: "Fiona", age: 35, industry: "Energy", job: "Offshore oil engineer in Aberdeen",
+      text: "I’m an offshore oil engineer in Aberdeen. I hold some shares in my employer and I want to save for my children’s education in about ten years.",
+      emergency: 5, existing: "Shares in her employer", risk: "Medium", drop: "held", goal: "Children’s education in 10 years",
+      sector: "energy", subtitle: "Built around a job in energy and a ten-year education goal.",
+      overlapFrom: 22, overlapTo: 0,
+      oneLine: "No energy funds, and her employer shares are flagged as a concentration risk.",
+      holdings: [
+        { t: "VTI", n: "Total US shares", a: 20000, b: "growth", eq: true, why: "A broad base for a ten-year goal.", f: [["Education goal in 10 years", "Your profile"]] },
+        { t: "VXUS", n: "International shares", a: 20000, b: "growth", eq: true, why: "Spreads money beyond the US and away from the North Sea energy market.", f: [["Your job sector: Energy", "Your profile"]] },
+        { t: "XLK", n: "US technology", a: 8000, b: "growth", eq: true, why: "Growth from a sector with no link to oil prices.", f: [["Job-linked sectors cut by half, the rest spread elsewhere", "Allocation rule 4"]] },
+        { t: "XLV", n: "US healthcare", a: 7000, b: "growth", eq: true, why: "Moves independently of oil prices.", f: [["Job-linked sectors cut by half, the rest spread elsewhere", "Allocation rule 4"]] },
+        { t: "XLU", n: "US utilities", a: 5000, b: "growth", eq: true, why: "Steady businesses to balance the plan.", f: [["Medium risk: 60% shares, 40% bonds", "Allocation rule 3"]] },
+        { t: "BND", n: "Total US bonds", a: 30000, b: "growth", eq: false, why: "Medium risk means about 40% in bonds.", f: [["Medium risk: 60% shares, 40% bonds", "Allocation rule 3"]] },
+        { t: "TIP", n: "Inflation-protected Treasuries", a: 10000, b: "growth", eq: false, why: "Protects the education fund against rising prices.", f: [["Education goal in 10 years", "Your profile"]] }
+      ],
+      askWhy: "Because your job and your employer shares already depend on oil and gas. A bad year for energy could hit your income and your savings together, so this plan holds no energy funds and flags your employer shares.",
+      askWhyFacts: [["Your job sector: Energy", "Your profile"], ["You hold shares in your employer", "Your profile"], ["Energy funds: $0 of $100,000", "Your plan"]]
+    }
+  };
+
+  // Illustrative month-end values in $ thousands (demo data, not real fund returns).
+  const planSeries = [100, 97.0, 95.6, 96.9, 92.8, 92.6, 88.9, 92.3, 90.0, 85.6, 87.4, 90.4, 87.8, 90.6, 89.0, 90.9, 91.6, 91.2, 93.4, 95.1, 93.9, 91.0, 89.5, 93.6, 97.4];
+  const techSeries = [100, 91.2, 87.1, 91.2, 79.0, 77.7, 70.7, 79.6, 75.5, 67.5, 70.2, 74.1, 67.4, 74.0, 74.6, 81.6, 82.0, 88.3, 93.6, 96.4, 94.9, 89.9, 87.6, 96.4, 101.9];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const simDateLabel = (i) => {
+    if (i === 0) return "3 Jan 2022";
+    const m = (i - 1) % 12, y = 2022 + Math.floor((i - 1) / 12);
+    return `${monthDays[m]} ${months[m]} ${y}`;
+  };
+  const shortLabel = (i) => {
+    const m = i === 0 ? 0 : (i - 1) % 12, y = i === 0 ? 2022 : 2022 + Math.floor((i - 1) / 12);
+    return `${months[m]} ${String(y).slice(2)}`;
+  };
+  const usd = (n) => "$" + Math.round(n).toLocaleString("en-US");
+
+  let current = "priya";
+  let tmIndex = 0;
+
+  /* ---------- 3D carousel ---------- */
+  const panels = Array.from(document.querySelectorAll(".panel"));
+  const dockNav = document.getElementById("dock-nav");
+  const stage = document.getElementById("stage");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let active = 0;
+
+  panels.forEach((p, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = p.dataset.title;
+    b.addEventListener("click", () => go(i));
+    dockNav.appendChild(b);
+    p.addEventListener("click", (e) => { if (p.classList.contains("is-side")) { e.preventDefault(); go(i); } });
+  });
+
+  function layout() {
+    const n = panels.length;
+    panels.forEach((p, i) => {
+      let off = ((i - active) % n + n) % n;
+      if (off > n / 2) off -= n;
+      let t, o = 1, z = 1;
+      if (reduced.matches) {
+        t = "translate3d(-50%,0,0)";
+        o = off === 0 ? 1 : 0;
+      } else if (off === 0) {
+        t = "translate3d(-50%,0,0) rotateY(0deg)";
+        z = 3;
+      } else if (off === 1) {
+        t = "translate3d(calc(-50% + var(--side)),0,-560px) rotateY(-46deg)";
+        o = 0.55; z = 2;
+      } else if (off === -1) {
+        t = "translate3d(calc(-50% - var(--side)),0,-560px) rotateY(46deg)";
+        o = 0.55; z = 2;
+      } else {
+        t = "translate3d(-50%,0,-1300px) rotateY(0deg) scale(0.8)";
+        o = 0; z = 0;
+      }
+      p.style.transform = t;
+      p.style.opacity = o;
+      p.style.zIndex = z;
+      p.classList.toggle("is-side", off === 1 || off === -1);
+      p.classList.toggle("is-hidden", o === 0);
+      Array.from(p.children).forEach((c) => {
+        if (off === 0) c.removeAttribute("inert"); else c.setAttribute("inert", "");
+      });
+      if (off === 0) p.removeAttribute("aria-hidden"); else p.setAttribute("aria-hidden", "true");
+    });
+    Array.from(dockNav.children).forEach((b, i) => b.setAttribute("aria-current", i === active ? "true" : "false"));
+  }
+  function go(i) {
+    const n = panels.length;
+    active = ((i % n) + n) % n;
+    layout();
+  }
+  document.getElementById("prev").addEventListener("click", () => go(active - 1));
+  document.getElementById("next").addEventListener("click", () => go(active + 1));
+  document.addEventListener("keydown", (e) => {
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (e.key === "ArrowRight") go(active + 1);
+    if (e.key === "ArrowLeft") go(active - 1);
+  });
+  let touchX = null;
+  stage.addEventListener("touchstart", (e) => { touchX = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener("touchend", (e) => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 60) go(active + (dx < 0 ? 1 : -1));
+    touchX = null;
+  });
+  reduced.addEventListener("change", layout);
+
+  /* ---------- Theme ---------- */
+  document.getElementById("theme-btn").addEventListener("click", () => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = isDark ? "light" : "dark";
+  });
+
+  /* ---------- Profile ---------- */
+  const el = (id) => document.getElementById(id);
+  function setPressed(groupId, value) {
+    el(groupId).querySelectorAll(".pill").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === value ? "true" : "false"));
+  }
+  ["risk-pills", "drop-pills"].forEach((g) => {
+    el(g).addEventListener("click", (e) => { const b = e.target.closest(".pill"); if (b) setPressed(g, b.dataset.v); });
+  });
+  function fillProfile(key) {
+    const p = personas[key];
+    el("about").value = p.text;
+    el("age").value = p.age;
+    el("industry").value = p.industry;
+    el("job").value = p.job;
+    el("emergency").value = p.emergency;
+    el("existing").value = p.existing;
+    el("goal").value = p.goal;
+    setPressed("risk-pills", p.risk);
+    setPressed("drop-pills", p.drop);
+    document.querySelectorAll(".persona-btn").forEach((b) => b.setAttribute("aria-pressed", b.dataset.persona === key ? "true" : "false"));
+    el("profile-result").classList.remove("on");
+    el("profile-result").innerHTML = "";
+  }
+  document.querySelectorAll(".persona-btn").forEach((b) => b.addEventListener("click", () => fillProfile(b.dataset.persona)));
+
+  el("build-btn").addEventListener("click", () => {
+    const key = document.querySelector(".persona-btn[aria-pressed='true']").dataset.persona;
+    const risk = el("risk-pills").querySelector("[aria-pressed='true']")?.dataset.v;
+    const drop = el("drop-pills").querySelector("[aria-pressed='true']")?.dataset.v;
+    el("parsing").classList.add("on");
+    el("build-btn").disabled = true;
+    setTimeout(() => {
+      el("parsing").classList.remove("on");
+      el("build-btn").disabled = false;
+      current = key;
+      const p = personas[key];
+      let html = "";
+      if (risk === "High" && drop === "sold") {
+        html = `<div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/></svg><div><strong>Your answers don’t quite match</strong>You said high risk, but you sold everything when markets dropped in March 2020. We’ve stepped your risk down one level to medium.</div></div>`;
+      } else {
+        html = `<div class="callout" style="border-color:var(--line);background:var(--tile)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color:var(--plan)"><path d="M20 6 9 17l-5-5"/></svg><div><strong>Profile ready</strong>Your job sits in ${p.industry.toLowerCase()}, so your plan avoids doubling that exposure.</div></div>`;
+      }
+      html += `<div class="build-row" style="margin-top:14px"><button class="btn" type="button" id="see-plan">See my portfolio</button></div>`;
+      el("profile-result").innerHTML = html;
+      el("profile-result").classList.add("on");
+      const pb = el("profile-result").closest(".panel-body");
+      pb.scrollTo({ top: pb.scrollHeight, behavior: reduced.matches ? "auto" : "smooth" });
+      el("see-plan").addEventListener("click", () => go(1));
+      renderPortfolio();
+      renderTimeMachine();
+    }, 1200);
+  });
+
+  /* ---------- Portfolio ---------- */
+  const colors = ["var(--c1)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)", "var(--c6)", "var(--c7)", "var(--c8)", "var(--c9)"];
+  function donutSvg(holdings, r, w) {
+    const C = 2 * Math.PI * r;
+    let acc = 0, s = "";
+    holdings.forEach((h, i) => {
+      const len = (h.a / 100000) * C;
+      s += `<circle cx="60" cy="60" r="${r}" fill="none" stroke="${colors[i % colors.length]}" stroke-width="${w}" stroke-dasharray="${Math.max(len - 1.2, 0.1)} ${C}" stroke-dashoffset="${-acc}"/>`;
+      acc += len;
+    });
+    return s;
+  }
+  function factList(f) {
+    return `<ul class="facts">${f.map(([text, src]) => `<li>${text} <span class="chip">${src}</span></li>`).join("")}</ul>`;
+  }
+  function renderPortfolio() {
+    const p = personas[current];
+    el("pf-title").textContent = `${p.name}’s $100,000 plan`;
+    el("pf-sub").textContent = p.subtitle;
+    const safe = p.holdings.filter((h) => h.b === "safe").reduce((a, h) => a + h.a, 0);
+    el("st-safe").textContent = usd(safe);
+    el("st-safe-note").textContent = safe > 0 ? "For a goal within 5 years" : "No goal within 5 years";
+    el("st-growth").textContent = usd(100000 - safe);
+    el("st-growth-note").textContent = "Spread away from your job’s sector";
+    el("st-overlap").textContent = `${p.overlapFrom}% → ${p.overlapTo}%`;
+    el("st-overlap-bar").style.width = p.overlapTo + "%";
+    el("st-overlap-mark").style.left = p.overlapFrom + "%";
+    el("st-overlap-note").textContent = "Typical portfolio vs your plan (demo figures)";
+    el("donut").innerHTML = donutSvg(p.holdings, 48, 16);
+    el("donut").setAttribute("aria-label", "Allocation: " + p.holdings.map((h) => `${h.t} ${usd(h.a)}`).join(", "));
+    el("holdings").innerHTML = p.holdings.map((h, i) => `
+      <button class="holding" type="button" aria-expanded="false" aria-controls="why-${i}" data-i="${i}">
+        <span class="swatch" style="background:${colors[i % colors.length]}"></span>
+        <span class="ticker">${h.t}</span>
+        <span class="hname">${h.n}<span class="bucket-tag">${h.b === "safe" ? "Safe" : "Growth"}</span></span>
+        <span class="hamt">${usd(h.a)}</span>
+      </button>
+      <div class="why" id="why-${i}"><p>${h.why}</p>${factList(h.f)}</div>`).join("");
+    el("holdings").querySelectorAll(".holding").forEach((b) => b.addEventListener("click", () => {
+      const open = b.getAttribute("aria-expanded") === "true";
+      el("holdings").querySelectorAll(".holding").forEach((x) => { x.setAttribute("aria-expanded", "false"); });
+      el("holdings").querySelectorAll(".why").forEach((x) => x.classList.remove("on"));
+      if (!open) { b.setAttribute("aria-expanded", "true"); el("why-" + b.dataset.i).classList.add("on"); }
+    }));
+    el("compare-grid").innerHTML = Object.keys(personas).map((k) => {
+      const q = personas[k];
+      const top = [...q.holdings].sort((a, b) => b.a - a.a).slice(0, 3);
+      return `<article class="pcard"${k === current ? ' style="border-color:var(--ion)"' : ""}>
+        <h3>${q.name}</h3><div class="note">${q.job}</div>
+        <div class="mini"><svg viewBox="0 0 120 120" role="img" aria-label="${q.name}’s allocation">${donutSvg(q.holdings, 44, 20)}</svg></div>
+        <div class="reason">${q.oneLine}</div>
+        <ul>${top.map((h) => `<li>${h.t} ${usd(h.a)}</li>`).join("")}</ul>
+      </article>`;
+    }).join("");
+  }
+  el("tab-plan").addEventListener("click", () => setTab("plan"));
+  el("tab-compare").addEventListener("click", () => setTab("compare"));
+  function setTab(t) {
+    el("tab-plan").setAttribute("aria-selected", t === "plan" ? "true" : "false");
+    el("tab-compare").setAttribute("aria-selected", t === "compare" ? "true" : "false");
+    el("view-plan").hidden = t !== "plan";
+    el("view-compare").hidden = t !== "compare";
+  }
+
+  /* ---------- Time machine ---------- */
+  const X0 = 56, X1 = 800, Y0 = 20, Y1 = 262, lo = 60, hi = 105;
+  const xOf = (i) => X0 + (i / (planSeries.length - 1)) * (X1 - X0);
+  const yOf = (v) => Y1 - ((v - lo) / (hi - lo)) * (Y1 - Y0);
+  function pathFor(series, upto) {
+    return series.slice(0, upto + 1).map((v, i) => `${i ? "L" : "M"}${xOf(i).toFixed(1)} ${yOf(v).toFixed(1)}`).join("");
+  }
+  function renderChart() {
+    let s = "";
+    for (let v = 60; v <= 100; v += 10) {
+      s += `<line x1="${X0}" x2="${X1}" y1="${yOf(v)}" y2="${yOf(v)}" stroke="var(--line)"/>`;
+      s += `<text x="${X0 - 10}" y="${yOf(v) + 4}" text-anchor="end" font-size="12" fill="var(--muted)">$${v}k</text>`;
+    }
+    for (let i = 0; i < planSeries.length; i += 3) {
+      s += `<text x="${xOf(i)}" y="${Y1 + 24}" text-anchor="middle" font-size="12" fill="var(--muted)">${shortLabel(i)}</text>`;
+    }
+    const fx = xOf(tmIndex);
+    if (tmIndex < planSeries.length - 1) {
+      s += `<defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="var(--line)" stroke-width="2"/></pattern></defs>`;
+      s += `<rect x="${fx + 6}" y="${Y0}" width="${X1 - fx - 6}" height="${Y1 - Y0}" fill="url(#hatch)" opacity="0.7"/>`;
+      s += `<text x="${(fx + X1) / 2}" y="${Y0 + 22}" text-anchor="middle" font-size="13" font-weight="600" fill="var(--muted)">Not visible yet</text>`;
+    }
+    s += `<line x1="${fx}" x2="${fx}" y1="${Y0}" y2="${Y1}" stroke="var(--ion)" stroke-dasharray="4 4"/>`;
+    s += `<path d="${pathFor(techSeries, tmIndex)}" fill="none" stroke="var(--compare)" stroke-width="2.5" stroke-linejoin="round"/>`;
+    s += `<path d="${pathFor(planSeries, tmIndex)}" fill="none" stroke="var(--plan)" stroke-width="3" stroke-linejoin="round"/>`;
+    s += `<circle cx="${fx}" cy="${yOf(techSeries[tmIndex])}" r="5" fill="var(--compare)"/>`;
+    s += `<circle cx="${fx}" cy="${yOf(planSeries[tmIndex])}" r="6" fill="var(--plan)"/>`;
+    el("chart").innerHTML = s;
+  }
+  function renderTimeMachine() {
+    const p = personas[current];
+    el("tm-sub").textContent = current === "priya"
+      ? "The chart only shows data up to the simulation date. The future stays hidden, for you and for the AI."
+      : `This prototype’s replay uses Priya’s demo data. In the full version it replays ${p.name}’s own plan.`;
+    const date = simDateLabel(tmIndex);
+    el("sim-date").textContent = "Simulation date: " + date;
+    el("tm-month").textContent = date;
+    const frac = tmIndex / (planSeries.length - 1);
+    el("dial-arc").setAttribute("stroke-dasharray", `${(frac * 69.1).toFixed(1)} 70`);
+    el("v-plan").textContent = usd(planSeries[tmIndex] * 1000);
+    el("v-tech").textContent = usd(techSeries[tmIndex] * 1000);
+    el("tm-prev").disabled = tmIndex === 0;
+    el("tm-next").disabled = tmIndex === planSeries.length - 1;
+    renderChart();
+    renderCoach();
+  }
+  function renderCoach() {
+    const slot = el("coach-slot");
+    if (tmIndex === 0) {
+      slot.innerHTML = `<div class="calm"><h3>Ready to replay</h3><p>Press “Next month” to move the simulation forward. The coach steps in if markets fall sharply.</p></div>`;
+      return;
+    }
+    const techChg = techSeries[tmIndex] / techSeries[tmIndex - 1] - 1;
+    const planChg = planSeries[tmIndex] / planSeries[tmIndex - 1] - 1;
+    const pct = (x) => (x > 0 ? "+" : "") + (x * 100).toFixed(1) + "%";
+    if (techChg <= -0.08) {
+      const loss = Math.max(0, 100 - planSeries[tmIndex]) * 1000;
+      const yearsLeft = Math.max(0, 5 - tmIndex / 12).toFixed(1);
+      slot.innerHTML = `<div class="coach enter" role="region" aria-label="Coach">
+        <h3>Tech shares fell ${(Math.abs(techChg) * 100).toFixed(1)}% this month</h3>
+        <p>Your plan moved ${pct(planChg)}. This fall is mostly in tech, where your job already sits, so your plan was built to feel it less. Your $30,000 deposit money is in Treasuries, and your deposit is due in about ${yearsLeft} years.</p>
+        <p>${loss > 0 ? `Selling everything now would lock in about ${usd(loss)} of losses against your starting value.` : "Your plan is still above its starting value."} The decision is yours.</p>
+        <div class="coach-actions">
+          <button class="btn" type="button" data-act="hold">Hold</button>
+          <button class="btn ghost" type="button" data-act="rebalance">Rebalance</button>
+          <button class="btn ghost" type="button" data-act="sell">I still want to sell</button>
+        </div>
+        <button class="link-btn" type="button" data-act="human">Talk to a human adviser</button>
+        <div class="note" id="coach-reply" style="margin-top:8px"></div>
+      </div>`;
+      slot.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => {
+        const msg = {
+          hold: "Holding. Nothing changes; your plan stays on track for your goal.",
+          rebalance: "Rebalance proposed: move holdings back to their target mix. Approve it in the full version.",
+          sell: `Understood. Selling now locks in about ${usd(loss)} against your starting value. In the full version you’d confirm this on the next screen.`,
+          human: "In a real launch, this connects you to an FCA-authorised adviser."
+        }[b.dataset.act];
+        el("coach-reply").textContent = msg;
+      }));
+    } else if (tmIndex >= 13 && techSeries[tmIndex] > planSeries[tmIndex]) {
+      slot.innerHTML = `<div class="calm"><h3>Tech is now ahead of your plan</h3><p>In 2023 tech recovered strongly and your plan lagged. That’s expected: diversification isn’t about winning every year. It’s about not losing your job and your savings at the same time.</p></div>`;
+    } else {
+      slot.innerHTML = `<div class="calm"><h3>A normal month</h3><p>Your plan moved ${pct(planChg)} and the tech-heavy portfolio moved ${pct(techChg)}. Nothing needs your attention.</p></div>`;
+    }
+  }
+  el("tm-next").addEventListener("click", () => { if (tmIndex < planSeries.length - 1) { tmIndex++; renderTimeMachine(); } });
+  el("tm-prev").addEventListener("click", () => { if (tmIndex > 0) { tmIndex--; renderTimeMachine(); } });
+  el("tm-reset").addEventListener("click", () => { tmIndex = 0; renderTimeMachine(); });
+
+  /* ---------- Ask ---------- */
+  const chat = el("chat");
+  function scrollChat() {
+    const body = chat.closest(".panel-body");
+    body.scrollTo({ top: body.scrollHeight, behavior: reduced.matches ? "auto" : "smooth" });
+  }
+  function addMsg(role, html) {
+    const d = document.createElement("div");
+    d.className = "msg " + role;
+    d.innerHTML = html;
+    chat.appendChild(d);
+    scrollChat();
+    return d;
+  }
+  function answer(kind) {
+    const p = personas[current];
+    const date = simDateLabel(tmIndex);
+    if (kind === "why") return `<p>${p.askWhy}</p>${factList(p.askWhyFacts)}`;
+    if (kind === "fall") {
+      const eqTotal = p.holdings.filter((h) => h.eq).reduce((a, h) => a + h.a, 0);
+      const hit = eqTotal * 0.3;
+      return `<p>If shares fell 30% overnight, your plan would drop by about ${usd(hit)}, or ${(hit / 1000).toFixed(1)}% of $100,000. Bonds and Treasuries would cushion the rest. A portfolio that was all shares would drop by $30,000.</p>${factList([[`Shares in your plan: ${usd(eqTotal)}`, "Your plan"], ["Stress test: shares fall 30%, bonds unchanged", "Scenario rule"]])}`;
+    }
+    if (kind === "sell") return `<p>That’s your decision. Three questions decide it: do you need this money within a year, has the reason you bought it changed, and are you too concentrated in one area? For your plan today, goal money within 5 years is already in the safe bucket, and no fund is above the 25% cap.</p><p>If you still want to sell, I’ll show you exactly what it would cost first.</p>${factList([["No fund above 25% of the portfolio", "Allocation rule 5"], [`Simulation date: ${date}`, "Data clock"]])}`;
+    if (kind === "leak") return `<p>I only use data up to today’s simulation date, ${date}, and I don’t make predictions. I can show how your plan would handle a large drop instead.</p>${factList([[`Data visible up to ${date}`, "Data clock"]])}`;
+    return `<p>In the full version, your question goes to the AI service along with your plan’s facts. For this demo, try one of the suggested questions.</p>`;
+  }
+  const questions = {
+    why: () => `Why so little in ${personas[current].industry.toLowerCase()}?`,
+    fall: () => "What if markets fall 30%?",
+    sell: () => "Should I sell?",
+    leak: () => "What happens to tech stocks in 2022?"
+  };
+  function ask(kind, text) {
+    addMsg("user", text);
+    const t = addMsg("ai", `<span class="typing" aria-label="Thinking"><i></i><i></i><i></i></span>`);
+    setTimeout(() => { t.innerHTML = answer(kind); scrollChat(); }, reduced.matches ? 100 : 900);
+  }
+  el("suggest").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) ask(b.dataset.q, questions[b.dataset.q]()); });
+  el("ask-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = el("ask-input").value.trim();
+    if (!v) return;
+    const low = v.toLowerCase();
+    let kind = "other";
+    if (low.includes("2022") || low.includes("predict") || low.includes("future") || low.includes("will")) kind = "leak";
+    else if (low.includes("fall") || low.includes("crash") || low.includes("drop")) kind = "fall";
+    else if (low.includes("sell")) kind = "sell";
+    else if (low.includes("why") || low.includes("little")) kind = "why";
+    ask(kind, v.replace(/[<>&]/g, ""));
+    el("ask-input").value = "";
+  });
+  addMsg("ai", `<p>Hi, I’m your plan’s assistant. Ask me why anything is in your portfolio, or what would happen in a bad month. I’ll show where every number comes from.</p>`);
+
+  /* ---------- Init ---------- */
+  fillProfile("priya");
+  renderPortfolio();
+  renderTimeMachine();
+  layout();
+})();
+</script>
+</body>
+</html>
