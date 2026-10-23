@@ -1,0 +1,36 @@
+{
+  "profile": {
+    "name": "Priya",
+    "age": 29,
+    "job_title": "Software engineer",
+    "industry": "Fintech",
+    "employer": "London fintech (fictional)",
+    "location": "London",
+    "risk_tolerance": "high",
+    "experience": "some",
+    "emergency_fund_months": 4,
+    "high_interest_debt": false,
+    "past_behaviour": "Sold everything in March 2020",
+    "goals": [
+      {
+        "name": "House deposit",
+        "amount_usd": 30000,
+        "years_away": 5
+      }
+    ],
+    "holdings": [
+      {
+        "ticker": "QQQ",
+        "amount_usd": 15000,
+        "is_employer_stock": false
+      }
+    ],
+    "exclusions": [],
+    "contradictions": [
+      "Stated high risk tolerance but sold in the 2020 drop"
+    ]
+  },
+  "contradictions": [
+    "Stated high risk tolerance but sold in the 2020 drop"
+  ]
+}
