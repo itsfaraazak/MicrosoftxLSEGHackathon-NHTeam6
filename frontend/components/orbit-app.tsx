@@ -68,9 +68,6 @@ export function OrbitApp() {
         <Orbit key={epoch} views={ORBIT_VIEWS} active={active} onSelect={select} />
       </main>
       <Dock active={active} onSelect={select} />
-      <footer className="hidden px-4 pb-3 text-center text-xs text-muted-foreground md:block">
-        Educational hackathon project. Not financial advice. Paper money only.
-      </footer>
     </>
   );
 }

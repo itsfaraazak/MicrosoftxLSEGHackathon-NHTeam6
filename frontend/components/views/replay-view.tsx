@@ -3,6 +3,7 @@ import { Pause, Play } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CoachCard } from "@/components/coach-card";
+import { OriginTag } from "@/components/origin-tag";
 import { PanelBody, PanelHead } from "@/components/panel";
 import { ProvenanceChip } from "@/components/provenance-chip";
 import { ErrorNotice, Working } from "@/components/query-state";
@@ -153,6 +154,7 @@ export function ReplayView() {
               <i aria-hidden className="inline-block h-[3px] w-[18px] rounded bg-compare" />
               {TECH}
             </span>
+            <OriginTag kind="market" className="ml-auto" />
           </div>
           <ReplayChart visible={visible} extent={extent} windowStart={SIM_START} windowEnd={SIM_END} oursLabel={OURS} techLabel="Tech-heavy" />
           <div className="mt-3 flex flex-wrap items-center gap-2.5">

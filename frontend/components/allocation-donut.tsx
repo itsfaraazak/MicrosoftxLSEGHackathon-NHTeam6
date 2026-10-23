@@ -11,6 +11,26 @@ const SLICE_COLORS = [
 ];
 export const sliceColor = (i: number) => SLICE_COLORS[i % SLICE_COLORS.length];
 
+// A slice's share of the ring, for display only.
+const share = (amount: number, total: number) => (total > 0 ? `${Math.round((amount / total) * 100)}%` : "");
+
+// Colour key for a chart that has no list beside it (the Compare cards).
+export function DonutLegend({ positions }: { positions: Position[] }) {
+  const total = positions.reduce((sum, p) => sum + p.amount_usd, 0);
+  return (
+    <ul aria-label="Chart key" className="flex flex-col gap-1 text-[13px]">
+      {positions.map((p, i) => (
+        <li key={`${p.ticker}-${i}`} className="flex items-center gap-2">
+          <span aria-hidden className="size-2.5 flex-none rounded-sm" style={{ background: sliceColor(i) }} />
+          <span className="font-bold">{p.ticker}</span>
+          <span className="truncate text-muted-foreground">{tickerName(p.ticker)}</span>
+          <span className="money ml-auto font-semibold">{share(p.amount_usd, total)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 // Slice length = amount / total, a purely visual ratio.
 export function AllocationDonut({
   positions,
@@ -26,6 +46,7 @@ export function AllocationDonut({
   compact?: boolean;
 }) {
   const total = positions.reduce((sum, p) => sum + p.amount_usd, 0);
+  const sel = selected !== null ? positions[selected] : undefined;
   let offset = 0;
   const label = `Allocation: ${positions.map((p) => `${tickerName(p.ticker)} ${usd(p.amount_usd)}`).join(", ")}`;
   return (
@@ -56,12 +77,22 @@ export function AllocationDonut({
             return el;
           })}
       </svg>
-      {!compact && <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
-        <div>
-          <div className="font-heading text-2xl leading-none font-semibold">{positions.length}</div>
-          <div className="text-base font-semibold text-muted-foreground">holdings</div>
+      {!compact && (
+        <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+          {sel ? (
+            <div>
+              <div className="font-heading text-xl leading-none font-semibold">{sel.ticker}</div>
+              <div className="money mt-1 text-base font-bold">{share(sel.amount_usd, total)}</div>
+              <div className="text-sm font-semibold text-muted-foreground">of the plan</div>
+            </div>
+          ) : (
+            <div>
+              <div className="font-heading text-2xl leading-none font-semibold">{positions.length}</div>
+              <div className="text-base font-semibold text-muted-foreground">funds</div>
+            </div>
+          )}
         </div>
-      </div>}
+      )}
     </div>
   );
 }

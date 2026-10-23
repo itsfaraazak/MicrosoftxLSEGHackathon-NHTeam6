@@ -6,7 +6,7 @@ import time
 
 from pydantic import ValidationError
 
-from ai import guardrails, llm, rigor
+from ai import data_availability, guardrails, llm, rigor
 from ai.exposure_fallback import fallback_exposure
 from ai.guardrails import REFUSE_DISTRESS, REFUSE_FUTURE, REFUSE_INJECTION
 from ai.number_check import check
@@ -167,19 +167,30 @@ def answer(question: str, profile: dict | Profile | None, sim_date: str, facts: 
         profile = Profile(name="Client", age=30, job_title="", industry="", risk_tolerance="medium")
     elif not isinstance(profile, Profile):
         profile = Profile(**profile)
+    # Questions about the app's own data are answered in code: the model can't know what files exist.
+    direct = data_availability.direct_answer(question, sim_date)
+    if direct:
+        rigor.step("Data availability", "code", 0, "answered from the data clock")
+        store.log("ask", {"question": question, "answer": direct, "sim_date": sim_date, "numbers_checked": 0, "rejected": []})
+        return {"answer": direct, "facts_used": []}
     if facts is None:
         try:
             from engine.portfolio import build
             facts = build(profile, map_exposure(profile), sim_date)[1]
         except (ImportError, NotImplementedError):
             facts = _default_facts(sim_date)
-    prompt = (f"Answer the client's question in 2-4 plain sentences using only these facts. If they don't cover it, say you don't know.\n"
+    # One entry per distinct fact: the engine emits a job_overlap per sector ETF, which made the model repeat itself.
+    facts = data_availability.dedupe_facts([*facts, *data_availability.market_facts(question, sim_date)])
+    prompt = (f"Answer the client's question in 2-4 plain sentences using only these facts. If they don't cover it, say you don't know. "
+              f"State each fact at most once and do not repeat yourself.\n"
+              f"{data_availability.data_context(sim_date)}\n"
               f"How the portfolio is built (rules in code, you may explain them): sectors the client's job already depends on "
               f"are cut by half and the difference is spread across other sectors; money needed within 5 years goes in "
               f"short-term Treasuries; no single ETF is above 25%.\n"
               f"Client: {profile.job_title} in {profile.industry}.\nFacts:\n{_facts_prompt(facts)}\n"
               f"Question: {guardrails.fence(question)}")
-    text = _checked(prompt, facts, sim_date, "I don't have enough information in today's data to answer that.")
+    # 17 = the number of ETFs the data context names; it is a fixed property of the app, not a market number.
+    text = _checked(prompt, facts, sim_date, "I don't have enough information in today's data to answer that.", {17.0})
     rig = rigor.meta()
     nc = (rig or {}).get("number_check", {})
     store.log("ask", {"question": question, "answer": text, "sim_date": sim_date,

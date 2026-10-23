@@ -2,14 +2,14 @@
 import { ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import { FactChip } from "@/components/fact-chip";
+import { ProvenanceChip } from "@/components/provenance-chip";
 import { PanelBody, PanelHead } from "@/components/panel";
 import { ErrorNotice, Working } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppState } from "@/lib/app-state";
-import { ApiError, FactSchema, api } from "@/lib/api";
-import { longDate } from "@/lib/display";
+import { ApiError, FactSchema, api, type Fact } from "@/lib/api";
+import { factLabel, factValue, longDate } from "@/lib/display";
 import { useSessionValue, writeSession } from "@/lib/session-store";
 import { cn } from "@/lib/utils";
 import { goToView } from "@/lib/views";
@@ -19,6 +19,7 @@ const SUGGESTED = [
   "Why so little in my job’s sector?",
   "What if markets fall 30%?",
   "Should I sell?",
+  "Do you have recent data?",
   LEAK_QUESTION,
 ];
 
@@ -35,6 +36,54 @@ const HISTORY_KEY = "ask-history";
 
 // Questions are sent as plain text: tags are stripped before they leave the browser.
 const stripHtml = (s: string) => s.replace(/<[^>]*>/g, "").trim();
+
+const MAX_FACTS = 4;
+
+// The backend can send many near-identical facts (one overlap fact per sector fund). Show each kind of fact once.
+function compactFacts(facts: Fact[]): Fact[] {
+  const seen = new Set<string>();
+  return facts.filter((f) => {
+    if (seen.has(f.id)) return false;
+    seen.add(f.id);
+    return true;
+  });
+}
+
+// "last_close_qqq" -> "QQQ last close"; everything else uses the shared labels.
+function askFactLabel(f: Fact): string {
+  const m = /^(last_close|week_change)_([a-z]+)$/.exec(f.id);
+  if (!m) return factLabel(f.id);
+  return `${m[2].toUpperCase()} ${m[1] === "last_close" ? "last close" : "change over 1 week"}`;
+}
+
+function FactsList({ facts }: { facts: Fact[] }) {
+  const [all, setAll] = useState(false);
+  const unique = useMemo(() => compactFacts(facts), [facts]);
+  if (unique.length === 0) return null;
+  const shown = all ? unique : unique.slice(0, MAX_FACTS);
+  return (
+    <div className="mt-2.5">
+      <ul className="flex flex-col gap-2">
+        {shown.map((f) => (
+          <li key={`${f.id}-${f.as_of}`} className="flex flex-wrap items-center gap-2 text-[0.95rem]">
+            <span>{askFactLabel(f)}:</span>
+            <strong className="money">{factValue(f)}</strong>
+            <ProvenanceChip source={f.source} asOf={f.as_of} />
+          </li>
+        ))}
+      </ul>
+      {unique.length > MAX_FACTS && (
+        <button
+          type="button"
+          onClick={() => setAll((v) => !v)}
+          className="mt-2 min-h-9 text-sm font-semibold text-primary underline underline-offset-4"
+        >
+          {all ? "Show fewer facts" : `Show ${unique.length - MAX_FACTS} more facts`}
+        </button>
+      )}
+    </div>
+  );
+}
 
 function ExchangeView({ item }: { item: Exchange }) {
   const leak = item.question === LEAK_QUESTION;
@@ -53,13 +102,7 @@ function ExchangeView({ item }: { item: Exchange }) {
           </p>
         )}
         <p className="leading-relaxed whitespace-pre-wrap">{item.answer}</p>
-        {item.facts.length > 0 && (
-          <ul className="mt-2.5 flex flex-col gap-2">
-            {item.facts.map((f) => (
-              <FactChip key={`${f.id}-${f.as_of}`} fact={f} />
-            ))}
-          </ul>
-        )}
+        <FactsList facts={item.facts} />
         <p className="mt-2 text-[0.95rem] font-semibold text-muted-foreground">Answer uses data up to {longDate(item.simDate)}</p>
         {leak && (
           <p className="mt-1 text-[0.95rem] text-muted-foreground">

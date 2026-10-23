@@ -1,5 +1,5 @@
 "use client";
-import { Loader2, Radio, Undo2 } from "lucide-react";
+import { Loader2, Radio } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { LiveSheet } from "@/components/live-sheet";
@@ -8,7 +8,7 @@ import { ApiError } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
 import { useGoLive } from "@/lib/live";
 
-// "Go live" / "Back to 2022": the prominent toggle that sits beside the sim clock in the top bar.
+// The top-bar live button. It never fetches on a bare tap: it opens a sheet that says what Go live will change first.
 export function LiveToggle() {
   const { live, enterLive, backTo2022 } = useAppState();
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -18,18 +18,16 @@ export function LiveToggle() {
     goLive.mutate(undefined, {
       onSuccess: (res) => {
         enterLive(res.latestDate);
-        setSheetOpen(true);
         if (res.staleNotice) {
           toast.message("Showing the last good market data", { description: res.staleNotice });
+        } else {
+          toast.success(`Live: prices up to ${res.latestDate}`, { description: "Plans you build now, Ask and Proof use this date." });
         }
       },
       onError: (err) => {
         if (err instanceof ApiError && err.kind === "cancelled") return;
         toast.error("Couldn't go live", {
-          description:
-            err instanceof ApiError
-              ? err.message
-              : "Something went wrong reaching live market data. Try again in a moment.",
+          description: err instanceof ApiError ? err.message : "Something went wrong reaching live market data. Try again in a moment.",
         });
       },
     });
@@ -47,31 +45,20 @@ export function LiveToggle() {
         size="sm"
         variant={live.active ? "outline" : "default"}
         className="h-11 min-w-11 flex-none rounded-full px-3 font-semibold md:h-9 md:px-3.5"
-        disabled={goLive.isPending}
-        onClick={live.active ? handleBackTo2022 : handleGoLive}
-        aria-label={live.active ? "Back to 2022: leave live market data" : "Go live: fetch today's real market data"}
+        onClick={() => setSheetOpen(true)}
+        aria-label={live.active ? "Live prices are on. Open details or go back to 2022" : "Go live: use today's prices. Opens an explanation first"}
+        title={live.active ? "Live prices are on" : "Use today's real prices instead of the 2022 simulation"}
       >
-        {goLive.isPending ? (
-          <Loader2 aria-hidden className="size-4 animate-spin" />
-        ) : live.active ? (
-          <Undo2 aria-hidden className="size-4" />
-        ) : (
-          <Radio aria-hidden className="size-4" />
-        )}
-        <span className="hidden sm:inline">
-          {goLive.isPending ? "Checking live market…" : live.active ? "Back to 2022" : "Go live"}
-        </span>
+        {goLive.isPending ? <Loader2 aria-hidden className="size-4 animate-spin" /> : <Radio aria-hidden className="size-4" />}
+        <span className="hidden sm:inline">{goLive.isPending ? "Fetching prices…" : live.active ? "Live · details" : "Go live: today's prices"}</span>
       </Button>
-      {live.active && !goLive.isPending && (
-        <button
-          type="button"
-          onClick={() => setSheetOpen(true)}
-          className="glass hidden flex-none items-center rounded-full px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-tile-hover sm:inline-flex"
-        >
-          View live market
-        </button>
-      )}
-      <LiveSheet open={sheetOpen} onOpenChange={setSheetOpen} onBackTo2022={handleBackTo2022} />
+      <LiveSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onGoLive={handleGoLive}
+        goLivePending={goLive.isPending}
+        onBackTo2022={handleBackTo2022}
+      />
     </>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
-import { Database, Menu, MoonStar, RotateCcw, Sun } from "lucide-react";
+import { Database, Menu, MoonStar, Network, RotateCcw, Sun } from "lucide-react";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import { DATA_SOURCES_MENU_CLASS, DataSourcesChip, DataSourcesSheet } from "@/components/data-sources-chip";
@@ -74,6 +75,9 @@ function PhoneMenu({ stepId }: { stepId: RigorStepId }) {
             >
               <Database aria-hidden className="size-5 text-primary" /> Where the numbers come from
             </button>
+            <Link href="/how-it-works" className={DATA_SOURCES_MENU_CLASS} onClick={() => setOpen(false)}>
+              <Network aria-hidden className="size-5 text-primary" /> How SPARK works
+            </Link>
             <RigorButton stepId={stepId} className="min-h-12 w-full justify-start gap-3 rounded-2xl px-4 text-base" />
             <ThemeToggle withLabel className="tile min-h-12 w-full justify-start rounded-2xl px-4" />
             <button
@@ -123,6 +127,15 @@ export function TopBar({ stepId }: { stepId: RigorStepId }) {
           <LiveToggle />
         </div>
         <div className="flex items-center justify-end gap-2">
+          <Link
+            href="/how-it-works"
+            aria-label="How SPARK works"
+            title="How SPARK works"
+            className="tile inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap text-muted-foreground hover:bg-tile-hover"
+          >
+            <Network aria-hidden className="size-3.5" />
+            <span className="hidden xl:inline">How it works</span>
+          </Link>
           <DataSourcesChip />
           <RigorButton stepId={stepId} className="h-9 min-h-9" />
           <HealthBadge />

@@ -2,6 +2,7 @@
 import { AlertTriangle, Check } from "lucide-react";
 import { useState } from "react";
 import { PanelBody, PanelHead } from "@/components/panel";
+import { OriginTag } from "@/components/origin-tag";
 import { ErrorNotice, Working } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,10 @@ function ReviewCard({
       <div>
         <h3 id="review-title" className="font-heading text-base font-semibold">Here’s what we understood</h3>
         <p className="text-sm text-muted-foreground">Check it over and fix anything before we build your plan.</p>
+        <div className="mt-1.5 flex flex-wrap gap-2">
+          <OriginTag kind="you" />
+          <span className="text-[13px] text-muted-foreground">Your words, read by AI. Only these fields are sent on.</span>
+        </div>
       </div>
 
       {contradictions.length > 0 && (
@@ -215,8 +220,9 @@ export function ProfileView() {
 
   function buildPlan() {
     if (!draft) return;
-    // The backend finds a person for the time machine by first name, so a nameless profile gets "You".
-    const named: Profile = draft.name.trim() ? draft : { ...draft, name: "You" };
+    // The backend finds a person for the time machine by first name, so a nameless profile gets the persona's name, or "You".
+    const fallbackName = persona === "custom" ? "You" : personaById(persona).name;
+    const named: Profile = draft.name.trim() ? draft : { ...draft, name: fallbackName };
     // Uses clock.date, not a hardcoded SIM_START: when live mode has moved the sim clock to today's
     // market, the plan is built on today's data too. Not live yet → clock.date is already SIM_START.
     build.mutate(

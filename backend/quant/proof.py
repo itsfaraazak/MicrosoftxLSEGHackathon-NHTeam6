@@ -106,7 +106,6 @@ def build_proof(profile: dict | None, portfolio: dict, sim_date: str) -> dict:
         "Weights are rebalanced daily and ignore fees, taxes and trading costs.",
         f"Test starts {strat.index[0].date()}, the first day every fund in either portfolio has prices.",
         "Sector weights are today's, not point-in-time: a known approximation.",
-        "Educational hackathon project. Not financial advice.",
     ]
     proof = {"sim_date": sim_date, "window": {"from": str(strat.index[0].date()), "to": str(strat.index[-1].date())},
              "strategy": {"name": "Job-aware diversified", "weights": weights},

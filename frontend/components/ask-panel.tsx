@@ -2,11 +2,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Disclaimer } from "@/components/disclaimer";
 import type { Fact, Profile } from "@/lib/api";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
@@ -218,9 +217,6 @@ export function AskPanel({ simDate = "2022-01-03" }: { simDate?: string }) {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="justify-center">
-        <Disclaimer />
-      </CardFooter>
     </Card>
   );
 }

@@ -1,5 +1,5 @@
 import { DataSourcesLink } from "@/components/data-sources-chip";
-import { Disclaimer } from "@/components/disclaimer";
+import { DataModeChip } from "@/components/live-badge";
 import { WhoChip } from "@/components/who-chip";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,7 @@ export function PanelHead({
         {who && (
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
             <WhoChip />
+            <DataModeChip />
             <DataSourcesLink />
           </div>
         )}
@@ -36,9 +37,6 @@ export function PanelBody({ className, children }: { className?: string; childre
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 pt-4 pb-5 md:px-8 md:pt-6 md:pb-8", className)}>
       {children}
-      <div className="mt-auto pt-4 md:hidden">
-        <Disclaimer />
-      </div>
     </div>
   );
 }

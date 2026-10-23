@@ -3,6 +3,7 @@ import { useState } from "react";
 import { AllocationDonut, sliceColor } from "@/components/allocation-donut";
 import { FactChip } from "@/components/fact-chip";
 import { FactDrawer } from "@/components/fact-drawer";
+import { OriginTag } from "@/components/origin-tag";
 import { OverlapRings } from "@/components/overlap-rings";
 import { PanelBody, PanelHead } from "@/components/panel";
 import { ENGINE_SOURCE, ProvenanceChip } from "@/components/provenance-chip";
@@ -13,6 +14,7 @@ import { CompareTab } from "@/components/views/compare-tab";
 import { useAppState } from "@/lib/app-state";
 import { OverlapScoreSchema, TextEnhancementSchema, readEnhancement, type Fact, type Position } from "@/lib/api";
 import { fractionPct, possessive, tickerName, usd } from "@/lib/display";
+import { personaById } from "@/lib/personas";
 import { cn } from "@/lib/utils";
 import { goToView } from "@/lib/views";
 
@@ -90,6 +92,11 @@ function mergeFacts(facts: Fact[], positions: Position[]): Fact[] {
   });
 }
 
+const BUCKET_GROUPS = [
+  { bucket: "safe", title: "Safe bucket", blurb: "money you will need soon, kept steady" },
+  { bucket: "growth", title: "Growth bucket", blurb: "money for the long term, with more ups and downs" },
+] as const;
+
 function PlanTab() {
   const { plan, profile } = useAppState();
   const [open, setOpen] = useState<number | null>(null);
@@ -104,9 +111,12 @@ function PlanTab() {
     <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
       <div className="flex flex-col gap-4">
         <section aria-labelledby="overlap-title" className="tile flex flex-col gap-2 rounded-2xl p-4">
-          <h3 id="overlap-title" className="text-sm font-semibold text-muted-foreground">
-            How much your savings and your paycheck lean on the same things
-          </h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 id="overlap-title" className="text-sm font-semibold text-muted-foreground">
+              How much your savings and your paycheck lean on the same things
+            </h3>
+            <OriginTag kind="rules" />
+          </div>
           {overlap.status === "ok" && (
             <>
               <OverlapRings
@@ -127,7 +137,10 @@ function PlanTab() {
           )}
         </section>
         <section aria-labelledby="why-title" className="tile flex flex-col gap-3 rounded-2xl p-4">
-          <h3 id="why-title" className="text-sm font-semibold text-muted-foreground">Why this plan</h3>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 id="why-title" className="text-sm font-semibold text-muted-foreground">Why this plan</h3>
+            <OriginTag kind="ai" />
+          </div>
           <p className="leading-relaxed">{explanation}</p>
           <FactDrawer facts={mergeFacts(facts, portfolio.positions)} />
         </section>
@@ -138,24 +151,47 @@ function PlanTab() {
           <BucketTile label="Safe bucket" amount={portfolio.safe_bucket_usd} asOf={portfolio.sim_date} />
           <BucketTile label="Growth bucket" amount={portfolio.growth_bucket_usd} asOf={portfolio.sim_date} />
         </div>
-        <div className="grid items-center gap-4 sm:grid-cols-[170px_1fr]">
-          <AllocationDonut positions={portfolio.positions} selected={hover ?? open} onSelect={setHover} />
+        <section aria-labelledby="split-title" className="tile flex flex-col gap-3 rounded-2xl p-4">
           <div>
-            <div className="mb-1.5 text-sm font-semibold text-muted-foreground">Select a holding to see why it’s there</div>
-            <ul className="flex flex-col gap-0.5">
-              {portfolio.positions.map((p, i) => (
-                <Holding
-                  key={`${p.ticker}-${i}`}
-                  position={p}
-                  index={i}
-                  open={open === i}
-                  onToggle={() => setOpen(open === i ? null : i)}
-                  onHover={setHover}
-                />
-              ))}
-            </ul>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 id="split-title" className="text-base font-bold">How your {usd(100000)} is split</h3>
+              <OriginTag kind="rules" />
+            </div>
+            <p className="text-[15px] leading-snug text-muted-foreground">
+              Each slice of the ring is one fund, and a bigger slice means more of your plan is in it. The colours only tell the funds
+              apart: match a colour to the list, or hover a slice or a row to see its name. Tap a row to see why it is there.
+            </p>
           </div>
-        </div>
+          <div className="grid items-start gap-4 sm:grid-cols-[170px_1fr]">
+            <AllocationDonut positions={portfolio.positions} selected={hover ?? open} onSelect={setHover} />
+            <div className="flex flex-col gap-3">
+              {BUCKET_GROUPS.map((g) => {
+                const rows = portfolio.positions.map((p, i) => ({ p, i })).filter(({ p }) => p.bucket === g.bucket);
+                if (rows.length === 0) return null;
+                return (
+                  <div key={g.bucket}>
+                    <div className="mb-1 flex flex-wrap items-baseline gap-x-2">
+                      <h4 className="text-sm font-bold">{g.title}</h4>
+                      <span className="text-[13px] text-muted-foreground">{g.blurb}</span>
+                    </div>
+                    <ul className="flex flex-col gap-0.5">
+                      {rows.map(({ p, i }) => (
+                        <Holding
+                          key={`${p.ticker}-${i}`}
+                          position={p}
+                          index={i}
+                          open={open === i}
+                          onToggle={() => setOpen(open === i ? null : i)}
+                          onHover={setHover}
+                        />
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -164,7 +200,8 @@ function PlanTab() {
 export function PortfolioView() {
   const { plan, profile, persona } = useAppState();
   // A custom user is always "You", whatever name the parser guessed.
-  const title = profile && persona !== "custom" ? `${possessive(profile.name)} ${usd(100000)} plan` : `Your ${usd(100000)} plan`;
+  const owner = persona === "custom" ? "" : profile?.name?.trim() || personaById(persona).name;
+  const title = `${possessive(owner)} ${usd(100000)} plan`;
   return (
     <>
       <PanelHead

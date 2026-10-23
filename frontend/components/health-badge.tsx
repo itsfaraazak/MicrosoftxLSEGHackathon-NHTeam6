@@ -46,7 +46,7 @@ export function HealthBadge({ className }: { className?: string }) {
       role="status"
       aria-live="polite"
       title={look.title}
-      className={cn("inline-flex items-center gap-2 rounded-full py-1.5 pr-1.5 pl-3 text-sm font-semibold", look.box, className)}
+      className={cn("inline-flex items-center gap-2 rounded-full py-1.5 pr-1.5 pl-3 text-sm font-semibold whitespace-nowrap", look.box, className)}
     >
       <span aria-hidden className={cn("size-2 rounded-full", look.dot)} />
       <span>{look.label}</span>

@@ -49,6 +49,12 @@ def profile_parse():
 @bp.post("/api/ask")
 def ask():
     if use_mocks():
+        # Even on mocks, questions about the app's own data get the true, code-built answer.
+        from ai.data_availability import direct_answer
+        body = request.get_json(silent=True) or {}
+        direct = direct_answer(str(body.get("question", "")), str(body.get("sim_date", "2022-01-03")))
+        if direct:
+            return jsonify({"answer": direct, "facts_used": []})
         return mock("ask")
     from ai.functions import answer
     body = request.json

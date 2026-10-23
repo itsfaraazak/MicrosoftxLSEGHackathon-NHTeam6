@@ -2,6 +2,7 @@
 import { Info } from "lucide-react";
 import { useState } from "react";
 import { ErrorNotice, Working } from "@/components/query-state";
+import { ORIGIN_KINDS, OriginTag, originHelp } from "@/components/origin-tag";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { longDate } from "@/lib/display";
@@ -64,6 +65,17 @@ export function DataSourcesSheet({ open, onOpenChange }: { open: boolean; onOpen
               </div>
             ))}
           </section>
+          <section aria-label="Labels" className="tile rounded-2xl p-3.5">
+            <h3 className="mb-2 text-base font-bold">The small labels you will see</h3>
+            <ul className="flex flex-col gap-2.5">
+              {ORIGIN_KINDS.map((k) => (
+                <li key={k} className="flex flex-col items-start gap-1">
+                  <OriginTag kind={k} />
+                  <span className="text-[15px] text-muted-foreground">{originHelp(k)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
           <section aria-label="Status badge" className="tile rounded-2xl p-3.5">
             <h3 className="mb-1.5 text-base font-bold">What the status badge means</h3>
             <ul className="flex flex-col gap-1.5 text-[15px]">
@@ -109,7 +121,7 @@ export const DATA_SOURCES_MENU_CLASS =
   "tile flex min-h-12 w-full items-center gap-3 rounded-2xl px-4 text-left text-base font-semibold hover:bg-tile-hover";
 
 const STYLES: Record<Variant, string> = {
-  chip: "tile inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold text-muted-foreground hover:bg-tile-hover",
+  chip: "tile inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold whitespace-nowrap text-muted-foreground hover:bg-tile-hover",
   link: "inline-flex min-h-7 items-center gap-1 rounded-full px-1.5 text-[13px] font-semibold text-primary underline underline-offset-4",
 };
 
