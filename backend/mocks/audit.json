@@ -1,0 +1,109 @@
+{
+  "events": [
+    {
+      "id": "b1b2c3d4-0001-4a11-8e11-000000000001",
+      "kind": "ask",
+      "ts": 1735898765.123,
+      "summary": "Asked: Why do I have so little in tech? -> answered, 2 numbers checked, 0 rejected",
+      "payload": {
+        "question": "Why do I have so little in tech?",
+        "answer": "You hold less tech because its overlap with your job is 31%.",
+        "sim_date": "2022-01-03",
+        "numbers_checked": 2,
+        "rejected": []
+      }
+    },
+    {
+      "id": "b1b2c3d4-0002-4a11-8e11-000000000002",
+      "kind": "ask_refused",
+      "ts": 1735898700.456,
+      "summary": "Refused before the model: future-looking question (Will tech crash next year?)",
+      "payload": {
+        "question": "Will tech crash next year?",
+        "sim_date": "2022-01-03",
+        "guardrail": "future_question"
+      }
+    },
+    {
+      "id": "b1b2c3d4-0003-4a11-8e11-000000000003",
+      "kind": "number_check_reject",
+      "ts": 1735898650.789,
+      "summary": "Number check rejected \"41\" and regenerated",
+      "payload": {
+        "bad": ["41"],
+        "sim_date": "2022-01-03"
+      }
+    },
+    {
+      "id": "b1b2c3d4-0004-4a11-8e11-000000000004",
+      "kind": "profile",
+      "ts": 1735898600.111,
+      "summary": "Parsed profile for Priya (1 contradiction flagged)",
+      "payload": {
+        "name": "Priya",
+        "age": 29,
+        "job_title": "Software engineer",
+        "industry": "Fintech",
+        "risk_tolerance": "high",
+        "contradictions": ["Stated high risk tolerance but sold in the 2020 drop"]
+      }
+    },
+    {
+      "id": "b1b2c3d4-0005-4a11-8e11-000000000005",
+      "kind": "exposure",
+      "ts": 1735898580.222,
+      "summary": "Mapped exposure across 2 sector(s) via llm",
+      "payload": {
+        "sectors": {"Technology": 0.7, "Financials": 0.3},
+        "source": "llm"
+      }
+    },
+    {
+      "id": "b1b2c3d4-0006-4a11-8e11-000000000006",
+      "kind": "explanation",
+      "ts": 1735898560.333,
+      "summary": "Generated a portfolio explanation, number-checked against facts",
+      "payload": {
+        "sim_date": "2022-01-03",
+        "text": "As of 2022-01-03, $30,000 is in the safe bucket and $70,000 in the growth bucket. SHY: $30,000 (goal_years 5y). VTI: $70,000 (tech_overlap 31%)."
+      }
+    },
+    {
+      "id": "b1b2c3d4-0007-4a11-8e11-000000000007",
+      "kind": "coach",
+      "ts": 1735898540.444,
+      "summary": "Generated a coaching message after a drawdown",
+      "payload": {
+        "sim_date": "2022-06-01",
+        "text": "Your portfolio is down 9.8%. This is market-wide, not specific to your holdings. Selling now would lock in a loss of $9,800. Suggested action: hold. The decision is yours."
+      }
+    },
+    {
+      "id": "b1b2c3d4-0008-4a11-8e11-000000000008",
+      "kind": "guard_event",
+      "ts": 1735898520.555,
+      "summary": "Guard event: -9.8% drawdown (market-wide), suggested hold",
+      "payload": {
+        "sim_date": "2022-06-01",
+        "drawdown_pct": -9.8,
+        "market_wide": true,
+        "cost_of_selling_usd": 9800,
+        "goal_years_away": 4.5,
+        "suggested_action": "hold"
+      }
+    },
+    {
+      "id": "b1b2c3d4-0009-4a11-8e11-000000000009",
+      "kind": "agent_action",
+      "ts": 1735898500.666,
+      "summary": "Agent action: rebalance_drift on VTI",
+      "payload": {
+        "sim_date": "2022-06-01",
+        "ticker": "VTI",
+        "trade_usd": -1200,
+        "rule_triggered": "rebalance_drift",
+        "approved": true
+      }
+    }
+  ]
+}

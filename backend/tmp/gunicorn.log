@@ -1,0 +1,10 @@
+[2026-10-23 14:34:06 +0100] [19478] [INFO] Starting gunicorn 26.2.0
+[2026-10-23 14:34:06 +0100] [19478] [INFO] Listening at: http://0.0.0.0:5070,http://[::]:5070 (19478)
+[2026-10-23 14:34:06 +0100] [19478] [INFO] Using worker: gthread
+[2026-10-23 14:34:06 +0100] [19480] [INFO] Booting worker with pid: 19480
+[2026-10-23 14:34:06 +0100] [19481] [INFO] Booting worker with pid: 19481
+[2026-10-23 14:34:06 +0100] [19478] [INFO] Control socket listening at /Users/faraaz/.gunicorn/gunicorn.ctl
+[2026-10-23 14:37:19 +0100] [19478] [INFO] Handling signal: term
+[2026-10-23 14:37:19 +0100] [19480] [INFO] Worker exiting (pid: 19480)
+[2026-10-23 14:37:19 +0100] [19481] [INFO] Worker exiting (pid: 19481)
+[2026-10-23 14:37:20 +0100] [19478] [INFO] Shutting down: Master

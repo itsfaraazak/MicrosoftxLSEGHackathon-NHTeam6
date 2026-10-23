@@ -3,16 +3,15 @@ from datetime import date
 
 import pytest
 
-from engine.exposure import ETF_SECTOR_WEIGHTS, overlap
+from engine.exposure import ETF_SECTOR_WEIGHTS
 from engine.portfolio import (
     allocate_stocks,
     baseline_overlap,
     build,
-    compute_overlap_score,
     risk_mix,
     safe_bucket_amount,
 )
-from models import ExposureMap, Goal, Holding, Profile, Position
+from models import ExposureMap, Goal, Holding, Profile
 
 
 def _profile(**overrides) -> Profile:
