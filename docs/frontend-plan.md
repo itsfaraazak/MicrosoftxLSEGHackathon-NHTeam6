@@ -75,22 +75,22 @@ Build each view simply first so Profile → Portfolio → Replay works end to en
 9. Presenter mode, minimal: Reset demo (Shift+R), ←/→, 1–4, N/B/R only. P (persona cycle) and the `?` panel are out unless time remains.
 10. sync-mocks + offline fallback (cheap; only if time).
 
-## Progress
-- [x] Plan approved; branch `bipin-frontend`; P2/P3 requests posted to HANDOFF.
-- [x] Step 1 — tokens + fonts (`globals.css`, `layout.tsx`), providers, `lib/schemas.ts` (core strict + `readEnhancement`), `lib/api.ts`
-  (timeouts, ApiError kinds, demo fallback), `lib/queries.ts`, `lib/app-state.tsx` + `lib/session-store.ts`, `lib/display.ts`, `lib/personas.ts`, health badge.
-- [x] Step 2 — `components/orbit.tsx` (motion springs, reduced-motion crossfade, swipe, inert, click side to front), `dock.tsx` (tablist),
-  `top-bar.tsx`, `sim-clock.tsx`, `orbit-app.tsx` (?view= via history.replaceState, ←/→/1–4), `app/page.tsx` (Suspense), redirects in `next.config.ts`.
-  Views are placeholders. tsc + lint + build pass; headless Chromium at 1920×1080 and 390×844: no console errors.
-- [x] Step 3 — Profile view: persona chips → free text → POST parse ("Reading your answers") → editable review card (age, industry, job, risk pills,
-  emergency months, past behaviour, goal, holdings) + gold contradiction callout → "Build my $100,000 plan" → orbit to Portfolio. Errors via `components/query-state.tsx`.
-- [x] Step 4 — Portfolio view: overlap rings (overlap_score enhancement; baseline only if sent), bucket tiles with provenance chips, explanation, donut + holdings
-  (reason + reason_facts chips), "How this was decided" Sheet (facts grouped by source), Plan | Compare people tabs (Compare is a stub: "Preparing comparison").
-  Verified against real Flask (USE_MOCKS=1, port 5001) in headless Chromium: no console errors. **STOPPED at checkpoint 2; waiting for "continue".**
-- [ ] Step 5 — Replay view (next).
-- Polish list (after Replay works): ring/donut label sizes at 1080p, Profile review card height, holdings name truncation, light-theme pass, "Talk to a human adviser".
-- Housekeeping done: prototype renamed to `materials/frontend-prototype.html` and tracked; branch pushed to origin; `backend/.venv` created (Python 3.15, requirements installed, no backend files edited); Flask runs with `USE_MOCKS=1 FLASK_PORT=5001`.
+## Progress (updated 2026-10-23 14:40)
+All planned core work is DONE on branch `bipin-frontend` (pushed). tsc + lint + `npm run build` pass; full demo path verified headless at 1920×1080 against the real Flask app (USE_MOCKS=1, port 5001) with no console errors.
+- [x] 1 Tokens/fonts/providers, zod API layer (core strict, enhancement fields per element), TanStack Query, health badge.
+- [x] 2 Orbit shell, dock, ←/→/1–4, swipe, `?view=` sync, redirects `/portfolio` and `/replay`.
+- [x] 3 Profile: persona presets → parse → editable review card (compact) → contradiction callout → build.
+- [x] 4 Portfolio: overlap rings, bucket tiles, donut, holdings + fact chips, "How this was decided" drawer.
+- [x] 5 Replay: fixed x-domain, hatched "Not visible yet", y-range only grows (resets at start), only visible months reach chart/tooltip/DOM, coach card (actions only acknowledge), 2023 lag note (API-driven), N/B/R, Play.
+- [x] 6 Offline fallback: `npm run sync-mocks` → `public/demo`; with `NEXT_PUBLIC_DEMO_FALLBACK=1` network errors, HTML 5xx and non-JSON replies load demo files through the same zod schemas, badge "Offline demo data".
+- [x] 7 Compare tab: demo-prep cache (sessionStorage `ddd:demo-prep`), starts once after the first build, persona parses deduplicated and seeded from the user's own parse, numbers only from `portfolios[i]`.
+- [x] 8 Ask: four chips incl. leak test in its own frame, free text (tags stripped), facts_used chips, "Answer uses data up to <date>", cancel, history in session.
+- [x] 9 Presenter (minimal): Shift+R Reset demo (session only, keeps Compare cache, remounts views), ←/→, 1–4, N/B/R.
+- [x] 10 Projector polish: HTML ring labels, larger donut/chart text, compact review card; no main view scrolls at 1080p; disclaimer on every view; light theme and reduced motion checked.
+- CUT: Autopilot, `?` shortcuts panel, P persona cycle, "Clear all caches" button (the `clearAllCaches` action exists in app state, no UI), ticker prefetch polish, light-theme contrast audit beyond a visual check.
+- Backup material: `materials/demo-screens/01..08-*.png`, `materials/demo-backup.webm`. Runbook: `docs/demo-runbook.md`.
 
 ## Notes for the next session
-- macOS: port 5000 is taken by AirPlay Receiver (ControlCenter). Either disable AirPlay Receiver or run Flask on 5001 and set NEXT_PUBLIC_API_URL.
-- Dev run: `cd backend && USE_MOCKS=1 FLASK_PORT=5001 .venv/bin/python app.py`; `cd frontend && NEXT_PUBLIC_API_URL=http://localhost:5001 npm run dev`.
+- Dev run: `cd backend && USE_MOCKS=1 FLASK_PORT=5001 .venv/bin/python app.py`; `cd frontend && NEXT_PUBLIC_API_URL=http://localhost:5001 NEXT_PUBLIC_DEMO_FALLBACK=1 npm run dev`.
+- macOS: port 5000 is AirPlay Receiver. Headless test scripts live in the session scratchpad, not the repo.
+- Open P2/P3 requests are in `docs/HANDOFF.md` (entries by P1).
