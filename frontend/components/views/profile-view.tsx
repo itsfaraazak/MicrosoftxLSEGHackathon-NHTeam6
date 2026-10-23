@@ -6,7 +6,7 @@ import { ErrorNotice, Working } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { SIM_START, useAppState } from "@/lib/app-state";
+import { INITIAL_CLOCK, SIM_START, useAppState } from "@/lib/app-state";
 import type { Profile, Risk } from "@/lib/api";
 import { usd } from "@/lib/display";
 import { PERSONAS, personaById, type PersonaId } from "@/lib/personas";
@@ -202,7 +202,7 @@ export function ProfileView() {
         onSuccess: (res) => {
           setProfile(draft);
           setPlan(res);
-          setClock({ date: SIM_START, cursor: 0, progress: 0 });
+          setClock(INITIAL_CLOCK);
           goToView("portfolio");
         },
       },
