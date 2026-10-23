@@ -14,3 +14,8 @@ export function viewIndex(id: string | null): number {
 
 export const panelId = (id: ViewId) => `panel-${id}`;
 export const tabId = (id: ViewId) => `tab-${id}`;
+
+// Next's useSearchParams follows native history updates, so view changes need no server round trip.
+export function goToView(id: ViewId) {
+  window.history.replaceState(null, "", `?view=${id}`);
+}

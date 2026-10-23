@@ -62,18 +62,18 @@ Separate sessionStorage key `ddd:demo-prep` holds background persona parses + co
   Shift+R "Reset demo" = current session only: profile, portfolio, persona → Priya, cursor → start, view → Profile, Ask history, and their queries.
   It does NOT clear demo-prep, so Compare stays instant. A separate "Clear all caches" action lives in the `?` panel.
 
-## Steps (tsc + lint after each; `npm run build` too at each STOP)
-1. Tokens, fonts, providers; schemas, api, queries; health badge.
-2. Orbit shell, dock, keyboard, URL sync, redirects. **STOP: commit, update progress, wait for "continue".**
-3. Profile view end to end.
-4. Portfolio view (rings, buckets, donut, holdings, drawer). **STOP.**
+## Steps — REVISED PRIORITIES (behind schedule; hard stop on new features at 15:00, then bug fixes only)
+Build each view simply first so Profile → Portfolio → Replay works end to end; polish only afterwards. tsc + lint after each step; `npm run build` too at each STOP.
+1. ✅ Tokens, fonts, providers; schemas, api, queries; health badge.
+2. ✅ Orbit shell, dock, keyboard, URL sync, redirects. (STOP done)
+3. Profile view end to end (simple first).
+4. Portfolio view (rings, buckets, donut, holdings, drawer). **STOP**: commit, update progress, wait for "continue".
 5. Replay view (chart, controls, coach). **STOP.**
-6. Compare tab (background parse + prefetch).
-7. Ask view (first to cut at 14:30).
-8. sync-mocks + offline fallback.
-9. Presenter mode, reduced motion, light theme, projector pass.
-10. Autopilot (only if time, flagged).
-Feature freeze 14:45; after that bug fixes only.
+6. Compare tab (background parse + prefetch after first portfolio).
+7. Ask view, only if there is time before 15:00.
+8. Autopilot: SKIPPED. `?` shortcuts panel polish: SKIPPED.
+9. Presenter mode, minimal: Reset demo (Shift+R), ←/→, 1–4, N/B/R only. P (persona cycle) and the `?` panel are out unless time remains.
+10. sync-mocks + offline fallback (cheap; only if time).
 
 ## Progress
 - [x] Plan approved; branch `bipin-frontend`; P2/P3 requests posted to HANDOFF.
@@ -82,8 +82,15 @@ Feature freeze 14:45; after that bug fixes only.
 - [x] Step 2 — `components/orbit.tsx` (motion springs, reduced-motion crossfade, swipe, inert, click side to front), `dock.tsx` (tablist),
   `top-bar.tsx`, `sim-clock.tsx`, `orbit-app.tsx` (?view= via history.replaceState, ←/→/1–4), `app/page.tsx` (Suspense), redirects in `next.config.ts`.
   Views are placeholders. tsc + lint + build pass; headless Chromium at 1920×1080 and 390×844: no console errors.
-- [ ] Step 3 — Profile view (next).
+- [x] Step 3 — Profile view: persona chips → free text → POST parse ("Reading your answers") → editable review card (age, industry, job, risk pills,
+  emergency months, past behaviour, goal, holdings) + gold contradiction callout → "Build my $100,000 plan" → orbit to Portfolio. Errors via `components/query-state.tsx`.
+- [x] Step 4 — Portfolio view: overlap rings (overlap_score enhancement; baseline only if sent), bucket tiles with provenance chips, explanation, donut + holdings
+  (reason + reason_facts chips), "How this was decided" Sheet (facts grouped by source), Plan | Compare people tabs (Compare is a stub: "Preparing comparison").
+  Verified against real Flask (USE_MOCKS=1, port 5001) in headless Chromium: no console errors. **STOPPED at checkpoint 2; waiting for "continue".**
+- [ ] Step 5 — Replay view (next).
+- Polish list (after Replay works): ring/donut label sizes at 1080p, Profile review card height, holdings name truncation, light-theme pass, "Talk to a human adviser".
+- Housekeeping done: prototype renamed to `materials/frontend-prototype.html` and tracked; branch pushed to origin; `backend/.venv` created (Python 3.15, requirements installed, no backend files edited); Flask runs with `USE_MOCKS=1 FLASK_PORT=5001`.
 
 ## Notes for the next session
 - macOS: port 5000 is taken by AirPlay Receiver (ControlCenter). Either disable AirPlay Receiver or run Flask on 5001 and set NEXT_PUBLIC_API_URL.
-- Smoke-testing without the Flask venv: a read-only Node stub serving backend/mocks on :5001 lives in the session scratchpad (not in the repo).
+- Dev run: `cd backend && USE_MOCKS=1 FLASK_PORT=5001 .venv/bin/python app.py`; `cd frontend && NEXT_PUBLIC_API_URL=http://localhost:5001 npm run dev`.
