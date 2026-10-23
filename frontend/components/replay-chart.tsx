@@ -3,12 +3,12 @@ import { useId, useState } from "react";
 import type { ReplayMonth } from "@/lib/api";
 import { longDate, monthLabel, usd, usdCompact } from "@/lib/display";
 
-const W = 820;
-const H = 300;
-const L = 72;
+const W = 640;
+const H = 380;
+const L = 78;
 const RIGHT = 14;
 const TOP = 12;
-const BOTTOM = 30;
+const BOTTOM = 34;
 
 const toTime = (iso: string) => Date.parse(`${iso.slice(0, 10)}T00:00:00Z`);
 
@@ -43,7 +43,7 @@ export function ReplayChart({
 
   const yTicks = [0, 1, 2, 3].map((k) => lo + ((hi - lo) * k) / 3);
   const xTicks: string[] = [];
-  for (let d = new Date(t0); d.getTime() <= t1; d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 3, 1))) {
+  for (let d = new Date(t0); d.getTime() <= t1; d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 6, 1))) {
     xTicks.push(d.toISOString().slice(0, 10));
   }
 
@@ -91,13 +91,13 @@ export function ReplayChart({
         {yTicks.map((v) => (
           <g key={v}>
             <line x1={L} x2={W - RIGHT} y1={y(v)} y2={y(v)} stroke="var(--border)" strokeDasharray="3 4" />
-            <text x={L - 8} y={y(v) + 4} textAnchor="end" fontSize="17" fill="var(--muted-foreground)" className="money">
+            <text x={L - 8} y={y(v) + 4} textAnchor="end" fontSize="18" fill="var(--muted-foreground)" className="money">
               {usdCompact(v)}
             </text>
           </g>
         ))}
         {xTicks.map((d) => (
-          <text key={d} x={x(d)} y={H - 8} textAnchor="middle" fontSize="17" fill="var(--muted-foreground)">
+          <text key={d} x={x(d)} y={H - 8} textAnchor="middle" fontSize="18" fill="var(--muted-foreground)">
             {monthLabel(d)}
           </text>
         ))}
@@ -119,11 +119,11 @@ export function ReplayChart({
         {hovered && (
           <g pointerEvents="none">
             <line x1={x(hovered.date)} x2={x(hovered.date)} y1={TOP} y2={H - BOTTOM} stroke="var(--muted-foreground)" strokeDasharray="2 3" />
-            <g transform={`translate(${Math.min(Math.max(x(hovered.date) - 80, L), W - RIGHT - 160)} ${TOP + 40})`}>
-              <rect width="160" height="64" rx="10" fill="var(--popover)" stroke="var(--border)" />
-              <text x="10" y="18" fontSize="17" fontWeight="700" fill="var(--foreground)">{monthLabel(hovered.date)}</text>
-              <text x="10" y="37" fontSize="17" fill="var(--plan)" className="money">{oursLabel}: {usd(hovered.ours)}</text>
-              <text x="10" y="55" fontSize="17" fill="var(--muted-foreground)" className="money">{techLabel}: {usd(hovered.tech_heavy)}</text>
+            <g transform={`translate(${Math.min(Math.max(x(hovered.date) - 100, L), W - RIGHT - 200)} ${TOP + 40})`}>
+              <rect width="200" height="72" rx="10" fill="var(--popover)" stroke="var(--border)" />
+              <text x="10" y="22" fontSize="15" fontWeight="700" fill="var(--foreground)">{monthLabel(hovered.date)}</text>
+              <text x="10" y="44" fontSize="15" fill="var(--plan)" className="money">{oursLabel}: {usd(hovered.ours)}</text>
+              <text x="10" y="64" fontSize="15" fill="var(--muted-foreground)" className="money">{techLabel}: {usd(hovered.tech_heavy)}</text>
             </g>
           </g>
         )}

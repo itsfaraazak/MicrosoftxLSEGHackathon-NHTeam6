@@ -58,8 +58,8 @@ export function AllocationDonut({
       </svg>
       {!compact && <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
         <div>
-          <div className="text-sm font-semibold text-muted-foreground">Your plan</div>
-          <div className="text-sm font-bold">{positions.length} holdings</div>
+          <div className="font-heading text-2xl leading-none font-semibold">{positions.length}</div>
+          <div className="text-base font-semibold text-muted-foreground">holdings</div>
         </div>
       </div>}
     </div>

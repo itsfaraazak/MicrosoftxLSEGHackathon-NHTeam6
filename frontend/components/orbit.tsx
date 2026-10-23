@@ -1,5 +1,5 @@
 "use client";
-import { motion, useReducedMotion, type TargetAndTransition } from "motion/react";
+import { motion, type TargetAndTransition } from "motion/react";
 import { useRef, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { panelId, tabId, type ViewId } from "@/lib/views";
@@ -8,6 +8,19 @@ export type OrbitView = { id: ViewId; title: string; content: React.ReactNode };
 
 const SPRING = { type: "spring", stiffness: 90, damping: 20, mass: 1 } as const;
 const FADE = { duration: 0.25 } as const;
+
+// Hydration-safe: the server snapshot is "no preference", then the client value applies after hydration.
+function useReducedMotionPref(): boolean {
+  return useSyncExternalStore(
+    (notify) => {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mq.addEventListener("change", notify);
+      return () => mq.removeEventListener("change", notify);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
+}
 
 // Stage width drives the carousel geometry; the server snapshot is a desktop default.
 function useWidth(ref: React.RefObject<HTMLElement | null>): number {
@@ -49,7 +62,7 @@ export function Orbit({
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const width = useWidth(stageRef);
-  const reduced = useReducedMotion() ?? false;
+  const reduced = useReducedMotionPref();
   const [touchX, setTouchX] = useState<number | null>(null);
 
   const narrow = width < 860;
