@@ -18,7 +18,8 @@
               "source": "profile",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Treasuries cover your $30,000 house deposit due in 5 years"
         },
         {
           "ticker": "VTI",
@@ -32,7 +33,8 @@
               "source": "yfinance",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Broad US fund, kept smaller because 31% of it is tech, which your job already depends on"
         },
         {
           "ticker": "VXUS",
@@ -46,7 +48,8 @@
               "source": "yfinance",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "International stocks spread risk away from the US market"
         },
         {
           "ticker": "XLV",
@@ -60,7 +63,8 @@
               "source": "yfinance",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Healthcare has no overlap with your tech job"
         },
         {
           "ticker": "BND",
@@ -74,8 +78,13 @@
               "source": "profile",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Bonds cushion the growth bucket against a downturn"
         }
+      ],
+      "baseline_overlap_score": 0.52,
+      "flags": [
+        "All holdings are USD-denominated ETFs; as a UK-based client you carry GBP/USD currency risk on top of market risk."
       ]
     },
     {
@@ -96,7 +105,8 @@
               "source": "profile",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Treasuries cover your $30,000 house deposit due in 5 years"
         },
         {
           "ticker": "VTI",
@@ -110,7 +120,8 @@
               "source": "yfinance",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Broad US fund, kept smaller because 31% of it is tech, which your job already depends on"
         },
         {
           "ticker": "VXUS",
@@ -124,7 +135,8 @@
               "source": "yfinance",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "International stocks spread risk away from the US market"
         },
         {
           "ticker": "XLV",
@@ -138,7 +150,8 @@
               "source": "yfinance",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Healthcare has no overlap with your tech job"
         },
         {
           "ticker": "BND",
@@ -152,8 +165,13 @@
               "source": "profile",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Bonds cushion the growth bucket against a downturn"
         }
+      ],
+      "baseline_overlap_score": 0.52,
+      "flags": [
+        "All holdings are USD-denominated ETFs; as a UK-based client you carry GBP/USD currency risk on top of market risk."
       ]
     },
     {
@@ -174,7 +192,8 @@
               "source": "profile",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Treasuries cover your $30,000 house deposit due in 5 years"
         },
         {
           "ticker": "VTI",
@@ -188,7 +207,8 @@
               "source": "yfinance",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Broad US fund, kept smaller because 31% of it is tech, which your job already depends on"
         },
         {
           "ticker": "VXUS",
@@ -202,7 +222,8 @@
               "source": "yfinance",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "International stocks spread risk away from the US market"
         },
         {
           "ticker": "XLV",
@@ -216,7 +237,8 @@
               "source": "yfinance",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Healthcare has no overlap with your tech job"
         },
         {
           "ticker": "BND",
@@ -230,8 +252,13 @@
               "source": "profile",
               "as_of": "2022-01-03"
             }
-          ]
+          ],
+          "reason": "Bonds cushion the growth bucket against a downturn"
         }
+      ],
+      "baseline_overlap_score": 0.52,
+      "flags": [
+        "All holdings are USD-denominated ETFs; as a UK-based client you carry GBP/USD currency risk on top of market risk."
       ]
     }
   ]

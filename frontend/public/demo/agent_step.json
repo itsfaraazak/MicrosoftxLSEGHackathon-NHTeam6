@@ -1,4 +1,7 @@
 {
   "trades": [],
-  "rule_triggered": "none"
+  "rule_triggered": "none",
+  "kill_switch": false,
+  "slice_usd": 15000,
+  "log_id": "mock"
 }

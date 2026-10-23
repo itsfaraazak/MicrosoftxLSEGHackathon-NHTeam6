@@ -32,5 +32,21 @@
   },
   "contradictions": [
     "Stated high risk tolerance but sold in the 2020 drop"
-  ]
+  ],
+  "meta": {
+    "model": "gpt-6.1-sol",
+    "latency_ms": 2140,
+    "llm_calls": 1,
+    "guardrail": null,
+    "number_check": {
+      "numbers_checked": 0,
+      "rejected": [],
+      "retries": 0,
+      "fallback_used": false
+    },
+    "data_as_of": "2022-01-03",
+    "steps": [
+      {"name": "LLM parse", "kind": "llm", "ms": 2140, "result": "parsed profile"}
+    ]
+  }
 }
