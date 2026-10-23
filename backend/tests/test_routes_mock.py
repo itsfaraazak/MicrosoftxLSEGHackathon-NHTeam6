@@ -24,3 +24,8 @@ def test_mocks_match_models():
     m = Path(__file__).parent.parent / "mocks"
     Profile(**json.loads((m / "profile_parse.json").read_text())["profile"])
     Portfolio(**json.loads((m / "portfolio.json").read_text())["portfolio"])
+    compare = json.loads((m / "compare.json").read_text())["portfolios"]
+    for pf in [json.loads((m / "portfolio.json").read_text())["portfolio"], *compare]:
+        model = Portfolio(**pf)
+        assert model.baseline_overlap_score is not None and model.baseline_overlap_score > model.overlap_score
+        assert all(p.reason for p in model.positions)

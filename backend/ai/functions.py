@@ -115,12 +115,15 @@ def _default_facts(sim_date: str) -> list[Fact]:
     return [Fact(**f) for f in mock["facts"]]
 
 
-def answer(question: str, profile: dict | Profile, sim_date: str, facts: list[Fact] | None = None) -> dict:
+def answer(question: str, profile: dict | Profile | None, sim_date: str, facts: list[Fact] | None = None) -> dict:
     refusal = guardrails.pre_filter(question, sim_date)
     if refusal:
         store.log("ask_refused", {"question": question, "sim_date": sim_date})
         return {"answer": refusal, "facts_used": []}
-    profile = profile if isinstance(profile, Profile) else Profile(**profile)
+    if profile is None:
+        profile = Profile(name="Client", age=30, job_title="", industry="", risk_tolerance="medium")
+    elif not isinstance(profile, Profile):
+        profile = Profile(**profile)
     if facts is None:
         try:
             from engine.portfolio import build

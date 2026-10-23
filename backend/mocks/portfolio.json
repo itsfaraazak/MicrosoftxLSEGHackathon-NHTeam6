@@ -17,7 +17,8 @@
             "source": "profile",
             "as_of": "2022-01-03"
           }
-        ]
+        ],
+        "reason": "Treasuries cover your $30,000 house deposit due in 5 years"
       },
       {
         "ticker": "VTI",
@@ -31,7 +32,8 @@
             "source": "yfinance",
             "as_of": "2022-01-03"
           }
-        ]
+        ],
+        "reason": "Broad US fund, kept smaller because 31% of it is tech, which your job already depends on"
       },
       {
         "ticker": "VXUS",
@@ -45,7 +47,8 @@
             "source": "yfinance",
             "as_of": "2022-01-03"
           }
-        ]
+        ],
+        "reason": "International stocks spread risk away from the US market"
       },
       {
         "ticker": "XLV",
@@ -59,7 +62,8 @@
             "source": "yfinance",
             "as_of": "2022-01-03"
           }
-        ]
+        ],
+        "reason": "Healthcare has no overlap with your tech job"
       },
       {
         "ticker": "BND",
@@ -73,9 +77,11 @@
             "source": "profile",
             "as_of": "2022-01-03"
           }
-        ]
+        ],
+        "reason": "Bonds cushion the growth bucket against a downturn"
       }
-    ]
+    ],
+    "baseline_overlap_score": 0.52
   },
   "explanation": "Your $30,000 house deposit sits in short-term Treasuries (SHY) because you need it in 5 years. The rest avoids tech: 31% of a broad US fund is tech, so we hold less of it.",
   "facts": [

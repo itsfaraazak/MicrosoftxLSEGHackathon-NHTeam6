@@ -1,9 +1,35 @@
-"""OWNER B (AI Layer): /api/profile/parse, /api/ask."""
-from flask import Blueprint, jsonify, request
+"""OWNER B (AI Layer): /api/profile/parse, /api/ask. Also app-wide LLM deadline + error mapping (504/502)."""
+from flask import Blueprint, g, jsonify, request
 
+from ai import llm
 from routes._mock import mock, use_mocks
 
 bp = Blueprint("ai", __name__)
+
+
+@bp.before_app_request
+def _open_deadline():
+    g.llm_deadline_token = llm.start_deadline()
+
+
+@bp.teardown_app_request
+def _close_deadline(_exc):
+    token = g.pop("llm_deadline_token", None)
+    if token is not None:
+        try:
+            llm.end_deadline(token)
+        except ValueError:
+            pass
+
+
+@bp.app_errorhandler(llm.LLMTimeout)
+def _llm_timeout(e):
+    return jsonify({"error": f"The AI took too long to answer: {e}", "fallback": True}), 504
+
+
+@bp.app_errorhandler(llm.LLMError)
+def _llm_error(e):
+    return jsonify({"error": f"The AI service is unavailable: {e}", "fallback": True}), 502
 
 
 @bp.post("/api/profile/parse")

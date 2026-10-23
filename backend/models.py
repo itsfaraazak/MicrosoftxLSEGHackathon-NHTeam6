@@ -53,6 +53,7 @@ class Position(BaseModel):
     amount_usd: float
     bucket: Literal["safe", "growth"]
     reason_facts: list[Fact] = Field(default_factory=list)
+    reason: str = ""
 
 
 class Portfolio(BaseModel):
@@ -61,6 +62,7 @@ class Portfolio(BaseModel):
     safe_bucket_usd: float
     growth_bucket_usd: float
     overlap_score: float
+    baseline_overlap_score: float | None = None
 
 
 class GuardEvent(BaseModel):

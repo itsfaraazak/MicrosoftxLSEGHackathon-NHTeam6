@@ -134,3 +134,9 @@ def test_ask_answer_checked_against_facts(monkeypatch):
     fake(monkeypatch, "You hold less tech because its overlap with your job is 31%.")
     out = functions.answer("Why do I have so little in tech?", PROFILE, "2022-01-03", facts=FACTS)
     assert "31%" in out["answer"] and out["facts_used"]
+
+
+def test_ask_accepts_null_profile(monkeypatch):
+    fake(monkeypatch, "Diversification means spreading money; tech overlap is 31%.")
+    out = functions.answer("What is diversification?", None, "2022-01-03", facts=FACTS)
+    assert out["answer"] and out["facts_used"]
