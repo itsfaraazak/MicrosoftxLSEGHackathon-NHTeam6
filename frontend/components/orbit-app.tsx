@@ -54,20 +54,25 @@ export function OrbitApp() {
     goToView(next);
   }, []);
 
+  // Navigation (select -> history.replaceState) must stay OUT of the setTourStepIndex
+  // updater: React may invoke a state updater more than once for the same commit, and
+  // calling a history-mutating side effect from inside it risks firing goToView twice for
+  // a single gesture. On a real phone, a swipe used to trigger two racing
+  // history.replaceState calls (this one plus Orbit's own touch handler, now removed),
+  // which Safari can throttle hard enough to look like a freeze. Compute `next` from the
+  // current tourStepIndex and call select() once, afterward, as a plain side effect.
   const advanceStep = useCallback(
     (dir: 1 | -1) => {
       if (tourEnabled) {
-        setTourStepIndex((prev) => {
-          const n = TOUR_STEPS.length;
-          const next = ((prev + dir) % n + n) % n;
-          select(viewIndex(TOUR_STEPS[next].view));
-          return next;
-        });
+        const n = TOUR_STEPS.length;
+        const next = ((tourStepIndex + dir) % n + n) % n;
+        setTourStepIndex(next);
+        select(viewIndex(TOUR_STEPS[next].view));
       } else {
         select(active + dir);
       }
     },
-    [tourEnabled, active, select],
+    [tourEnabled, active, select, tourStepIndex],
   );
 
   // Remember an explicit ?tour= choice for the rest of the session.

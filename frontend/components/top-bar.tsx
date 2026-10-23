@@ -37,7 +37,7 @@ export function TopBar() {
         <BrandMark />
         <span className="hidden sm:inline">Don’t Double Down</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         <SimClock />
         <LiveToggle />
       </div>

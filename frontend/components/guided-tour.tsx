@@ -207,7 +207,12 @@ export function GuidedTourBar({
 
       {!completed ? (
         <>
-          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-start sm:justify-between">
+          {/* No `items-start` on the base (flex-col) layout: that disables cross-axis
+              stretch, so the text div below would size itself via shrink-to-fit instead of
+              the row's width — letting its paragraphs run past the viewport edge instead of
+              wrapping. Stretch (the default) is restored for mobile; sm:items-start keeps
+              the intentional top-alignment once it switches to a row. */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 flex-1">
               <p className="text-[0.95rem] font-medium">{step.banner}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">{"👁 "}For judges: {step.judgeNote}</p>

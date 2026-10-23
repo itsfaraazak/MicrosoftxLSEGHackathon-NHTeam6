@@ -85,6 +85,14 @@ Frontend on Vercel (stable URL, `frontend/vercel.json` proxies `/api/*` to the l
 - Frontend (Bipin): `frontend/**` (additive edits only from others)
 - Shared contract (change only with all agreeing, log in `docs/decisions.md`, update the mock in the same commit): `backend/models.py`, `docs/api-contract.md`, `backend/mocks/**`
 
+
+## Status as of 2026-10-23 ~15:00 (read this first)
+- **Public demo:** https://dont-double-down-t6.vercel.app (Vercel frontend; `frontend/middleware.ts` proxies `/api/*` to this laptop's backend through ngrok `https://superbowl-jalapeno-mower.ngrok-free.dev` -> port 5070). If the laptop/tunnel is down the site falls back to demo data. Redeploy: `bash frontend/scripts/deploy.sh`. Runbook: `docs/DEPLOY.md`, `docs/demo-runbook.md`.
+- **Time machine** replays a client by first name: `/api/portfolio` registers the profile (`engine/personas.remember`), `/api/replay?profile_id=<first name>` finds it. Unknown name -> 404 "build a plan first".
+- **Data:** `docs/pitch/SLIDE-ANSWERS.md` (every slide question answered, data-source table, known weaknesses), `backend/data/SOURCES.md`, `docs/SPEC.md` (PDF spec vs code: met/partial/missing).
+- **Known issues:** phone layout clipping and a reported phone freeze were being fixed (check `git log`/`docs/HANDOFF.md`; workaround `?tour=0`); Proof tab overlap row uses the example mock portfolio (real engine gives Priya 5.4% vs 21.5%); Fiona's overlap is above the baseline; sector weights are end-2021 approximations; Cosmos DB / App Insights are NOT wired, do not claim them.
+- **Before judging:** `caffeinate -dimsu`; start backend (1 worker) + `ngrok http 5070`; run `backend/scripts/prewarm.py`; test the public URL on a phone.
+
 ## Style
 Match surrounding code. Python: type hints, pydantic models for shared objects, small pure functions. TS: strict, types
 in `lib/api.ts`. No comments that restate code. Prefer editing existing files. Keep the demo path boring and reliable.

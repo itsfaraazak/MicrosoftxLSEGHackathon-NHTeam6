@@ -1,6 +1,6 @@
 "use client";
 import { motion, type TargetAndTransition } from "motion/react";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { panelId, tabId, type ViewId } from "@/lib/views";
 
@@ -63,25 +63,23 @@ export function Orbit({
   const stageRef = useRef<HTMLDivElement>(null);
   const width = useWidth(stageRef);
   const reduced = useReducedMotionPref();
-  const [touchX, setTouchX] = useState<number | null>(null);
 
   const narrow = width < 860;
   const panelW = narrow ? width * 0.92 : Math.min(1000, width * 0.84);
   const side = narrow ? width * 0.96 : Math.min(width * 0.66, 760);
   const n = views.length;
 
+  // Swipe navigation is handled centrally by `useSwipe` (window pointer listeners) in
+  // orbit-app.tsx. This stage used to also bind its own touchstart/touchend handlers that
+  // called `onSelect` directly — on real touch devices that fired a *second*, racing
+  // navigation (history.replaceState) for the same gesture alongside the one from
+  // `useSwipe`, which could hang Safari's history stack and make the page look frozen.
+  // Only one source of truth for swipe now; this surface still allows native vertical
+  // scrolling (touch-action: pan-y) so the swipe gesture keeps working.
   return (
     <div
       ref={stageRef}
-      className="relative min-h-0 flex-1 overflow-clip [perspective-origin:50%_40%] [perspective:2200px]"
-      onTouchStart={(e) => setTouchX(e.touches[0]?.clientX ?? null)}
-      onTouchEnd={(e) => {
-        const end = e.changedTouches[0]?.clientX;
-        if (touchX !== null && end !== undefined && Math.abs(end - touchX) > 60) {
-          onSelect(active + (end < touchX ? 1 : -1));
-        }
-        setTouchX(null);
-      }}
+      className="relative min-h-0 flex-1 touch-pan-y overflow-clip [perspective-origin:50%_40%] [perspective:2200px]"
     >
       <div className="absolute inset-0 [transform-style:preserve-3d]">
         {views.map((v, i) => {
