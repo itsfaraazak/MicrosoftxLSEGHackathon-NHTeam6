@@ -2,12 +2,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { ParseResSchema, PortfolioResSchema, ProfileSchema, type ParseRes, type PortfolioRes, type Profile } from "@/lib/api";
+import { DEMO_PREP_KEY, resetDemoPrepStatus } from "@/lib/demo-prep";
 import { DEFAULT_PERSONA, isPersonaId, type PersonaId } from "@/lib/personas";
 import { clearSession, useSessionValue, writeSession } from "@/lib/session-store";
 
 export const SIM_START = "2022-01-03";
 export const SIM_END = "2023-12-29";
-export const DEMO_PREP_KEY = "demo-prep";
 
 export type SimClock = {
   date: string;
@@ -42,6 +42,8 @@ type AppState = {
   backTo2022: () => void;
   resetDemo: () => void;
   clearAllCaches: () => void;
+  // Bumped on every reset so views remount and drop their local state.
+  epoch: number;
 };
 
 const Ctx = createContext<AppState | null>(null);
@@ -87,6 +89,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setLive(INITIAL_LIVE);
     setClock(INITIAL_CLOCK);
   }, []);
+  const [epoch, setEpoch] = useState(0);
 
   // Reset demo: current session only. The demo-prep cache stays so Compare is instant after a reset.
   const resetDemo = useCallback(() => {
@@ -95,13 +98,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     queryClient.getMutationCache().clear();
     setClock(INITIAL_CLOCK);
     setLive(INITIAL_LIVE);
+    setEpoch((n) => n + 1);
   }, [queryClient]);
 
   const clearAllCaches = useCallback(() => {
     clearSession();
+    resetDemoPrepStatus();
     queryClient.clear();
     setClock(INITIAL_CLOCK);
     setLive(INITIAL_LIVE);
+    setEpoch((n) => n + 1);
   }, [queryClient]);
 
   const value = useMemo<AppState>(
@@ -121,8 +127,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       backTo2022,
       resetDemo,
       clearAllCaches,
+      epoch,
     }),
-    [persona, parsed, profile, plan, clock, live, enterLive, backTo2022, resetDemo, clearAllCaches],
+    [persona, parsed, profile, plan, clock, live, enterLive, backTo2022, resetDemo, clearAllCaches, epoch],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

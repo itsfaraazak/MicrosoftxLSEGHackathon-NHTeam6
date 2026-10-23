@@ -6,7 +6,6 @@ import { InlineContractNotice } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { TextEnhancementSchema, readEnhancement, type GuardEvent } from "@/lib/api";
 import { usd } from "@/lib/display";
-import { cn } from "@/lib/utils";
 
 const GUARD_SOURCE = "Guard engine";
 
@@ -46,19 +45,19 @@ export function CoachCard({ event }: { event: GuardEvent }) {
       animate={{ opacity: 1, rotateY: 0, x: 0 }}
       transition={{ type: "spring", stiffness: 110, damping: 16 }}
       style={{ transformPerspective: 800, transformOrigin: "100% 50%" }}
-      className="rounded-2xl border border-warn-line bg-warn-bg p-4"
+      className="rounded-2xl border border-warn-line bg-warn-bg p-3.5"
     >
-      <h3 className="mb-2 font-heading text-base font-semibold">Your coach has something to say</h3>
-      {message.status === "ok" && <p className="mb-3 leading-relaxed">{message.value}</p>}
+      <h3 className="mb-1.5 font-heading text-base font-semibold">Your coach has something to say</h3>
+      {message.status === "ok" && <p className="mb-2.5 leading-snug">{message.value}</p>}
       {message.status === "mismatch" && <div className="mb-3"><InlineContractNotice message={message.message} /></div>}
 
-      <dl className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2.5">
+      <dl className="mb-2.5 grid grid-cols-2 gap-x-4 gap-y-2">
         <Stat label="Fall from the peak" value={`${Math.abs(event.drawdown_pct)}%`} />
         <Stat label="Years to your goal" value={String(event.goal_years_away)} />
         <Stat label="Loss locked in by selling" value={usd(event.cost_of_selling_usd)} />
         <Stat label="Where the fall is" value={event.market_wide ? "Market-wide" : "Your holdings only"} />
       </dl>
-      <ProvenanceChip source={GUARD_SOURCE} asOf={event.sim_date} className="mb-3" />
+      <ProvenanceChip source={GUARD_SOURCE} asOf={event.sim_date} className="mb-2.5" />
 
       <p className="mb-2 text-sm">
         Suggested: <strong>{SUGGESTION[suggested]}</strong>. The decision is yours.
@@ -66,19 +65,19 @@ export function CoachCard({ event }: { event: GuardEvent }) {
       <div className="flex flex-wrap gap-2">
         <Button
           variant={suggested === "hold" ? "default" : "outline"}
-          className={cn("h-10 px-4 font-semibold")}
+          className="h-9 px-3.5 font-semibold"
           onClick={() => setAck("hold")}
         >
           Hold
         </Button>
         <Button
           variant={suggested === "rebalance" ? "default" : "outline"}
-          className="h-10 px-4 font-semibold"
+          className="h-9 px-3.5 font-semibold"
           onClick={() => setAck("rebalance")}
         >
           Rebalance
         </Button>
-        <Button variant="outline" className="h-10 px-4 font-semibold" onClick={() => setAck("sell")}>
+        <Button variant="outline" className="h-9 px-3.5 font-semibold" onClick={() => setAck("sell")}>
           I still want to sell
         </Button>
       </div>

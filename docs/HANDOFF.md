@@ -36,3 +36,17 @@ Files touched: docs/frontend-plan.md, docs/decisions.md, docs/HANDOFF.md
 
 ## 2026-10-23 · P1 (Bipin) · Mac port note
 On Macs, port 5000 clashes with AirPlay Receiver. Turn it off in System Settings → General → AirDrop & Handoff, or run Flask with FLASK_PORT=5001 and set NEXT_PUBLIC_API_URL to match.
+
+## 2026-10-23 14:42 · P1 (Bipin) · frontend: demo-ready
+Done: whole frontend on branch `bipin-frontend` (pushed, not merged). One orbit at `/` with Profile → Portfolio (rings, donut, facts drawer, Compare tab) → Time machine (data-clock chart, coach card, 2023 lag note) → Ask (leak test). Zod-validated API layer, health badge, offline demo fallback (`npm run sync-mocks`, `NEXT_PUBLIC_DEMO_FALLBACK=1`; covers network errors, HTML 5xx and non-JSON), Shift+R reset, ←/→, 1–4, N/B/R. Runbook: `docs/demo-runbook.md`. Backup: `materials/demo-screens/`, `materials/demo-backup.webm`. Plan/progress: `docs/frontend-plan.md`.
+Cut: Autopilot, `?` shortcuts panel, P persona cycle, "Clear all caches" button.
+Tested: everything against the real Flask app with `USE_MOCKS=1` (port 5001), dev and production build, headless 1920×1080, no console errors. LIVE (`USE_MOCKS=0`, origin/main 617cfea, one probe at 14:35): only `/api/health` works; the rest return HTML 500s (parse: KeyError AZURE_OPENAI_ENDPOINT; portfolio/compare/replay/ask: NotImplementedError). With no CORS headers on those 500s the browser reports a network error, which the fallback handles.
+Contract drift / mock quirks (one line each):
+1. Replay mock months start 2022-01-01, not 2022-01-03.
+2. Compare mock: three identical portfolios, no persona names; frontend maps by index to the personas it sent.
+3. Parse mock always returns Priya.
+4. Ask mock returns the same sentence for every question, so the leak test cannot be judged on mocks.
+5. 500s are HTML (Werkzeug debugger) without CORS headers; please return JSON `{"error": ...}` with CORS.
+Open requests for P2/P3 (all optional for the UI; full text in P1's earlier HANDOFF entry): `Position.display_name` and `reason`; define `overlap_score` exactly and add `baseline_overlap_score`; confirm replay `profile_id` (frontend sends lowercased first name); Facts for bucket totals; keyword-based mock parse (nurse→Tom, oil/Aberdeen→Fiona); replay mock starting 2022-01-03; JSON error bodies.
+Blockers / heads-up: docs/BACKEND-PLAN.md assigns frontend files to P2/P3 (`app/portfolio/`, `app/replay/`, `app/page.tsx`, "Ask panel", "coach pop-up", "compare screen"). Those routes are gone: everything lives in `frontend/components/**` behind `/`. Please send UI requests here instead of editing `frontend/**`, or we will conflict. The plan also names "the current frontend owner" as owner C for Guard/replay/Cosmos on the backend; I have not started that.
+Files touched: frontend/**, docs/frontend-plan.md, docs/demo-runbook.md, docs/decisions.md, docs/HANDOFF.md, materials/frontend-prototype.html, materials/demo-screens/, materials/demo-backup.webm

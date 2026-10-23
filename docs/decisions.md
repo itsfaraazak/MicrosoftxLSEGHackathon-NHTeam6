@@ -6,3 +6,7 @@
 - 2026-10-23 · LLM client is provider-flexible (LLM_BASE_URL/LLM_API_KEY/LLM_MODEL, AZURE_OPENAI_* fallback). Organizer portal is a Blazor login page, API shape unknown; no extra Azure resources unless free and subscription exists (docs/context/AZURE.md) · B
 - 2026-10-23 · Frontend work lives on branch `bipin-frontend` (not `p1/frontend`) · branch already created; one name for the whole day · P1
 - 2026-10-23 · Frontend validates every response with zod and degrades per section (core fields strict, enhancement fields optional) · teammates' backends will drift during the day; demo must not white-screen · P1
+- 2026-10-23 · Frontend is one orbit at `/` (`?view=profile|portfolio|replay|ask`); old `/portfolio` and `/replay` routes redirect · judges see one continuous flow, deep links work for the pitch · P1
+- 2026-10-23 · Demo fallback (`NEXT_PUBLIC_DEMO_FALLBACK=1`) also covers HTML 5xx / non-JSON replies, not just network errors, and the badge says "Offline demo data" whenever it is in use · a half-built backend (NotImplementedError 500s) must not break the demo, and the UI must not call saved data "live" · P1
+- 2026-10-23 · Compare uses a separate sessionStorage cache ("demo-prep") that Reset demo keeps · Compare stays instant after a reset and a refresh doesn't redo LLM calls · P1
+- 2026-10-23 · Cut: Autopilot, `?` shortcuts panel, P persona cycle, "Clear all caches" button · behind schedule; core story first · P1

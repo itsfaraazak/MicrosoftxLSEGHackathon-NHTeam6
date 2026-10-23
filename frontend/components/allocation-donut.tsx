@@ -1,5 +1,6 @@
 "use client";
 import type { Position } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { tickerName, usd } from "@/lib/display";
 
 const R = 44;
@@ -15,16 +16,20 @@ export function AllocationDonut({
   positions,
   selected,
   onSelect,
+  className,
+  compact = false,
 }: {
   positions: Position[];
   selected: number | null;
   onSelect: (i: number | null) => void;
+  className?: string;
+  compact?: boolean;
 }) {
   const total = positions.reduce((sum, p) => sum + p.amount_usd, 0);
   let offset = 0;
   const label = `Allocation: ${positions.map((p) => `${tickerName(p.ticker)} ${usd(p.amount_usd)}`).join(", ")}`;
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[220px]">
+    <div className={cn("relative mx-auto aspect-square w-full max-w-[220px]", className)}>
       <svg viewBox="0 0 120 120" role="img" aria-label={label} className="size-full -rotate-90">
         <circle cx="60" cy="60" r={R} fill="none" stroke="var(--border)" strokeWidth="16" />
         {total > 0 &&
@@ -51,12 +56,12 @@ export function AllocationDonut({
             return el;
           })}
       </svg>
-      <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+      {!compact && <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
         <div>
-          <div className="text-sm font-semibold text-muted-foreground">Your plan</div>
-          <div className="text-sm font-bold">{positions.length} holdings</div>
+          <div className="font-heading text-2xl leading-none font-semibold">{positions.length}</div>
+          <div className="text-base font-semibold text-muted-foreground">holdings</div>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

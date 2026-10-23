@@ -1,6 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DemoPrep } from "@/components/demo-prep";
 import { Dock } from "@/components/dock";
 import { GuidedTourBar } from "@/components/guided-tour";
 import { Orbit, type OrbitView } from "@/components/orbit";
@@ -44,7 +45,7 @@ export function OrbitApp() {
   const tourEnabled = tourParam === "0" ? false : tourParam === "1" ? true : storedTourPref !== "0";
   const [tourStepIndex, setTourStepIndex] = useState(() => readInitialTourStep(stepParam));
   const mountedRef = useRef(false);
-  const { setPersona } = useAppState();
+  const { setPersona, resetDemo, epoch } = useAppState();
 
   // Native history updates are picked up by useSearchParams without a server round trip.
   const select = useCallback((i: number) => {
@@ -101,7 +102,10 @@ export function OrbitApp() {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target)) return;
-      if (e.key === "ArrowRight") advanceStep(1);
+      if (e.key === "R" && e.shiftKey) {
+        resetDemo();
+        goToView("profile");
+      } else if (e.key === "ArrowRight") advanceStep(1);
       else if (e.key === "ArrowLeft") advanceStep(-1);
       else if (/^[1-5]$/.test(e.key)) select(Number(e.key) - 1);
       else return;
@@ -109,7 +113,7 @@ export function OrbitApp() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [select, advanceStep]);
+  }, [select, advanceStep, resetDemo]);
 
   // Swipe left = next, swipe right = previous — same step/view navigation as the arrow keys.
   useSwipe({ onSwipeLeft: () => advanceStep(1), onSwipeRight: () => advanceStep(-1) });
@@ -118,6 +122,7 @@ export function OrbitApp() {
 
   return (
     <>
+      <DemoPrep />
       {tourEnabled && (
         <div className="px-2 pt-2 md:px-4">
           <GuidedTourBar
@@ -130,7 +135,7 @@ export function OrbitApp() {
           />
         </div>
       )}
-      <Orbit views={ORBIT_VIEWS} active={active} onSelect={select} />
+      <Orbit key={epoch} views={ORBIT_VIEWS} active={active} onSelect={select} />
       <Dock active={active} onSelect={select} tourEnabled={tourEnabled} onToggleTour={toggleTour} />
     </>
   );

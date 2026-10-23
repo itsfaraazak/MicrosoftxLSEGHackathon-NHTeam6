@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { INITIAL_CLOCK, useAppState } from "@/lib/app-state";
 import type { Profile, Risk } from "@/lib/api";
 import { usd } from "@/lib/display";
+import { seedPersonaParse } from "@/lib/demo-prep";
 import { PERSONAS, personaById, type PersonaId } from "@/lib/personas";
 import { useBuildPortfolio, useParseProfile } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -28,7 +29,7 @@ function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; 
   );
 }
 
-const inputCls = "h-10 bg-panel-solid text-base";
+const inputCls = "h-9 bg-panel-solid text-base";
 
 function NumberInput({ id, value, onChange, min = 0 }: { id: string; value: number; onChange: (n: number) => void; min?: number }) {
   return (
@@ -61,15 +62,15 @@ function ReviewCard({
     onChange({ ...draft, goals: draft.goals.map((g, i) => (i === 0 ? { ...g, ...patch } : g)) });
 
   return (
-    <section aria-labelledby="review-title" className="tile flex flex-col gap-4 rounded-2xl p-5">
+    <section aria-labelledby="review-title" className="tile flex flex-col gap-3 rounded-2xl p-4">
       <div>
-        <h3 id="review-title" className="font-heading text-lg font-semibold">Here’s what we understood</h3>
-        <p className="text-sm text-muted-foreground">Check it over. Anything wrong? Fix it before we build your plan.</p>
+        <h3 id="review-title" className="font-heading text-base font-semibold">Here’s what we understood</h3>
+        <p className="text-sm text-muted-foreground">Check it over and fix anything before we build your plan.</p>
       </div>
 
       {contradictions.length > 0 && (
-        <div role="note" className="flex items-start gap-3.5 rounded-2xl border border-warn-line bg-warn-bg p-4">
-          <AlertTriangle aria-hidden className="mt-0.5 size-[22px] flex-none text-warn" />
+        <div role="note" className="flex items-start gap-3 rounded-xl border border-warn-line bg-warn-bg px-3.5 py-2.5">
+          <AlertTriangle aria-hidden className="mt-0.5 size-5 flex-none text-warn" />
           <div>
             <strong className="block">Your answers don’t quite match</strong>
             <ul className="text-[0.95rem]">
@@ -81,21 +82,54 @@ function ReviewCard({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Age" htmlFor="p-age">
-          <NumberInput id="p-age" value={draft.age} onChange={(n) => set("age", n)} min={18} />
-        </Field>
-        <Field label="Industry" htmlFor="p-industry">
-          <Input id="p-industry" value={draft.industry} onChange={(e) => set("industry", e.target.value)} className={inputCls} />
-        </Field>
+      <div className="grid grid-cols-6 gap-x-3 gap-y-2.5">
         <div className="col-span-2">
+          <Field label="Age" htmlFor="p-age">
+            <NumberInput id="p-age" value={draft.age} onChange={(n) => set("age", n)} min={18} />
+          </Field>
+        </div>
+        <div className="col-span-2">
+          <Field label="Industry" htmlFor="p-industry">
+            <Input id="p-industry" value={draft.industry} onChange={(e) => set("industry", e.target.value)} className={inputCls} />
+          </Field>
+        </div>
+        <div className="col-span-2">
+          <Field label="Savings (months)" htmlFor="p-emergency">
+            <NumberInput id="p-emergency" value={draft.emergency_fund_months} onChange={(n) => set("emergency_fund_months", n)} />
+          </Field>
+        </div>
+        <div className="col-span-3">
           <Field label="Job title" htmlFor="p-job">
             <Input id="p-job" value={draft.job_title} onChange={(e) => set("job_title", e.target.value)} className={inputCls} />
           </Field>
         </div>
-        <div className="col-span-2">
-          <span id="risk-label" className="text-sm font-semibold text-muted-foreground">Risk you’re comfortable with</span>
-          <div role="group" aria-labelledby="risk-label" className="mt-1.5 flex gap-1.5">
+        <div className="col-span-3">
+          <Field label="Past behaviour" htmlFor="p-past">
+            <Input id="p-past" value={draft.past_behaviour} onChange={(e) => set("past_behaviour", e.target.value)} className={inputCls} />
+          </Field>
+        </div>
+        {goal && (
+          <>
+            <div className="col-span-3">
+              <Field label="Main goal" htmlFor="p-goal">
+                <Input id="p-goal" value={goal.name} onChange={(e) => setGoal({ name: e.target.value })} className={inputCls} />
+              </Field>
+            </div>
+            <div className="col-span-2">
+              <Field label="Goal amount ($)" htmlFor="p-goal-amt">
+                <NumberInput id="p-goal-amt" value={goal.amount_usd} onChange={(n) => setGoal({ amount_usd: n })} />
+              </Field>
+            </div>
+            <div className="col-span-1">
+              <Field label="Years" htmlFor="p-goal-yrs">
+                <NumberInput id="p-goal-yrs" value={goal.years_away} onChange={(n) => setGoal({ years_away: n })} />
+              </Field>
+            </div>
+          </>
+        )}
+        <div className="col-span-6 flex flex-wrap items-center gap-2">
+          <span id="risk-label" className="mr-1 text-sm font-semibold text-muted-foreground">Risk you’re comfortable with</span>
+          <div role="group" aria-labelledby="risk-label" className="flex gap-1.5">
             {RISKS.map((r) => (
               <button
                 key={r}
@@ -103,7 +137,7 @@ function ReviewCard({
                 aria-pressed={draft.risk_tolerance === r}
                 onClick={() => set("risk_tolerance", r)}
                 className={cn(
-                  "rounded-full border px-4 py-2 text-sm font-semibold",
+                  "rounded-full border px-3.5 py-1.5 text-sm font-semibold",
                   draft.risk_tolerance === r
                     ? "border-primary bg-primary text-primary-foreground"
                     : "bg-panel-solid hover:bg-tile-hover",
@@ -114,27 +148,6 @@ function ReviewCard({
             ))}
           </div>
         </div>
-        <Field label="Emergency savings (months)" htmlFor="p-emergency">
-          <NumberInput id="p-emergency" value={draft.emergency_fund_months} onChange={(n) => set("emergency_fund_months", n)} />
-        </Field>
-        <Field label="Past behaviour" htmlFor="p-past">
-          <Input id="p-past" value={draft.past_behaviour} onChange={(e) => set("past_behaviour", e.target.value)} className={inputCls} />
-        </Field>
-        {goal && (
-          <>
-            <div className="col-span-2">
-              <Field label="Main goal" htmlFor="p-goal">
-                <Input id="p-goal" value={goal.name} onChange={(e) => setGoal({ name: e.target.value })} className={inputCls} />
-              </Field>
-            </div>
-            <Field label="Goal amount ($)" htmlFor="p-goal-amt">
-              <NumberInput id="p-goal-amt" value={goal.amount_usd} onChange={(n) => setGoal({ amount_usd: n })} />
-            </Field>
-            <Field label="Years away" htmlFor="p-goal-yrs">
-              <NumberInput id="p-goal-yrs" value={goal.years_away} onChange={(n) => setGoal({ years_away: n })} />
-            </Field>
-          </>
-        )}
       </div>
 
       <div>
@@ -191,7 +204,13 @@ export function ProfileView() {
   function read() {
     setEdits(null);
     build.reset();
-    parse.mutate(text, { onSuccess: (res) => setParsed(res) });
+    const untouchedPreset = custom?.persona !== persona;
+    parse.mutate(text, {
+      onSuccess: (res) => {
+        setParsed(res);
+        if (untouchedPreset) seedPersonaParse(persona, res);
+      },
+    });
   }
 
   function buildPlan() {

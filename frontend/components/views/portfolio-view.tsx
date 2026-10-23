@@ -138,7 +138,7 @@ function PlanTab() {
           <BucketTile label="Safe bucket" amount={portfolio.safe_bucket_usd} asOf={portfolio.sim_date} />
           <BucketTile label="Growth bucket" amount={portfolio.growth_bucket_usd} asOf={portfolio.sim_date} />
         </div>
-        <div className="grid items-center gap-4 sm:grid-cols-[140px_1fr]">
+        <div className="grid items-center gap-4 sm:grid-cols-[170px_1fr]">
           <AllocationDonut positions={portfolio.positions} selected={hover ?? open} onSelect={setHover} />
           <div>
             <div className="mb-1.5 text-sm font-semibold text-muted-foreground">Select a holding to see why it’s there</div>

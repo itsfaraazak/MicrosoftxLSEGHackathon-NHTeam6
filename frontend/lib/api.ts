@@ -125,12 +125,17 @@ async function call<S extends z.ZodType>(opts: CallOptions<S>): Promise<z.output
     );
   }
 
-  dataSource.set(false);
   const text = await res.text();
   let json: unknown;
+  let notJson = false;
   try {
     json = JSON.parse(text);
   } catch {
+    notJson = true;
+  }
+  if (!res.ok || notJson) {
+    // A half-built backend (HTML 500s, NotImplementedError) falls back to demo data too, clearly labelled.
+    if (DEMO_FALLBACK && opts.demoFile) return fromDemo(endpoint, opts.demoFile, opts.schema);
     throw new ApiError(
       res.ok ? "not-json" : "http",
       endpoint,
@@ -138,7 +143,7 @@ async function call<S extends z.ZodType>(opts: CallOptions<S>): Promise<z.output
       { status: res.status },
     );
   }
-  if (!res.ok) throw new ApiError("http", endpoint, `The backend returned ${res.status}`, { status: res.status });
+  dataSource.set(false);
   return parseOrThrow(endpoint, opts.schema, json);
 }
 

@@ -25,9 +25,6 @@ export function makeQueryClient() {
 export const queryKeys = {
   health: ["health"] as const,
   replay: (profileId: string, from: string, to: string) => ["replay", profileId, from, to] as const,
-  // Everything under "demo-prep" survives Reset demo; only "Clear all caches" drops it.
-  demoPrep: ["demo-prep"] as const,
-  compare: (names: string[], simDate: string) => ["demo-prep", "compare", ...names, simDate] as const,
 };
 
 export type HealthStatus = "checking" | "live" | "mock" | "offline" | "offline-demo";
@@ -42,8 +39,9 @@ export function useHealth(): { status: HealthStatus; refetch: () => void } {
     retry: false,
   });
   let status: HealthStatus = "checking";
-  if (q.data) status = q.data.mocks ? "mock" : "live";
-  else if (q.isError) status = DEMO_FALLBACK || offlineDemo ? "offline-demo" : "offline";
+  if (offlineDemo) status = "offline-demo";
+  else if (q.data) status = q.data.mocks ? "mock" : "live";
+  else if (q.isError) status = DEMO_FALLBACK ? "offline-demo" : "offline";
   return { status, refetch: () => void q.refetch() };
 }
 
@@ -52,14 +50,6 @@ export function useReplay(profileId: string | null, from: string, to: string) {
     queryKey: queryKeys.replay(profileId ?? "", from, to),
     queryFn: ({ signal }) => api.replay(profileId ?? "", from, to, signal),
     enabled: profileId !== null,
-  });
-}
-
-export function useCompare(profiles: Profile[] | null, simDate: string) {
-  return useQuery({
-    queryKey: queryKeys.compare(profiles?.map((p) => p.name) ?? [], simDate),
-    queryFn: ({ signal }) => api.compare(profiles ?? [], simDate, signal),
-    enabled: profiles !== null && profiles.length > 0,
   });
 }
 
