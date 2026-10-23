@@ -140,3 +140,10 @@ def test_ask_accepts_null_profile(monkeypatch):
     fake(monkeypatch, "Diversification means spreading money; tech overlap is 31%.")
     out = functions.answer("What is diversification?", None, "2022-01-03", facts=FACTS)
     assert out["answer"] and out["facts_used"]
+
+
+def test_parse_profile_rejects_empty_profile(monkeypatch):
+    empty = json.dumps({"name": "", "age": 0, "job_title": "", "industry": "", "risk_tolerance": "low"})
+    fake(monkeypatch, empty, empty, empty)
+    with pytest.raises(ValueError):
+        functions.parse_profile("asdf")

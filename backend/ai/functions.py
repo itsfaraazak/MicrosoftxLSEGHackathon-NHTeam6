@@ -42,10 +42,12 @@ def parse_profile(text: str) -> dict:
         try:
             data = _json(llm.chat(SIM_START, prompt + error, json_mode=True))
             profile = Profile(**data)
+            if not (profile.job_title.strip() or profile.industry.strip()) or profile.age <= 0:
+                raise ValueError("no usable profile in text")
             profile.contradictions = _contradictions(profile)
             store.log("profile", profile.model_dump(mode="json"))
             return {"profile": profile.model_dump(mode="json"), "contradictions": profile.contradictions}
-        except (json.JSONDecodeError, ValidationError, TypeError) as e:
+        except (json.JSONDecodeError, ValidationError, TypeError, ValueError) as e:
             error = f"\n\nYour previous output was invalid ({str(e)[:200]}). Return valid JSON only."
     raise ValueError("Could not parse a valid profile from the text")
 
