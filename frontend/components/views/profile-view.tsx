@@ -10,7 +10,7 @@ import { INITIAL_CLOCK, useAppState } from "@/lib/app-state";
 import type { Profile, Risk } from "@/lib/api";
 import { usd } from "@/lib/display";
 import { seedPersonaParse } from "@/lib/demo-prep";
-import { PERSONAS, personaById, type PersonaId } from "@/lib/personas";
+import { CUSTOM_PERSONA, PERSONAS, personaById, type PersonaId } from "@/lib/personas";
 import { useBuildPortfolio, useParseProfile } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { goToView } from "@/lib/views";
@@ -204,7 +204,7 @@ export function ProfileView() {
   function read() {
     setEdits(null);
     build.reset();
-    const untouchedPreset = custom?.persona !== persona;
+    const untouchedPreset = persona !== "custom" && custom?.persona !== persona;
     parse.mutate(text, {
       onSuccess: (res) => {
         setParsed(res);
@@ -215,13 +215,15 @@ export function ProfileView() {
 
   function buildPlan() {
     if (!draft) return;
+    // The backend finds a person for the time machine by first name, so a nameless profile gets "You".
+    const named: Profile = draft.name.trim() ? draft : { ...draft, name: "You" };
     // Uses clock.date, not a hardcoded SIM_START: when live mode has moved the sim clock to today's
     // market, the plan is built on today's data too. Not live yet → clock.date is already SIM_START.
     build.mutate(
-      { profile: draft, simDate: clock.date },
+      { profile: named, simDate: clock.date },
       {
         onSuccess: (res) => {
-          setProfile(draft);
+          setProfile(named);
           setPlan(res);
           // Reset the replay cursor/progress but keep whatever date is current (2022 start, or the
           // live date), so going live then building a plan doesn't silently drop back to 2022.
@@ -239,18 +241,19 @@ export function ProfileView() {
         subtitle="Your job matters as much as your risk appetite. We use it to keep your savings from betting on the same thing as your paycheck."
       />
       <PanelBody>
-        <div role="group" aria-label="Demo people" className="mb-4 flex flex-wrap gap-2">
-          {PERSONAS.map((p) => (
+        <div role="group" aria-label="Choose a demo person or write your own" className="mb-4 flex flex-wrap gap-2">
+          {[...PERSONAS, CUSTOM_PERSONA].map((p) => (
             <button
               key={p.id}
               type="button"
               aria-pressed={persona === p.id}
               onClick={() => pickPersona(p.id)}
               className={cn(
-                "rounded-full border px-4 py-2 text-sm font-semibold",
+                "min-h-11 rounded-full border px-4 py-2 text-[15px] font-semibold md:min-h-0 md:text-sm",
                 persona === p.id ? "border-primary bg-ion-soft" : "tile hover:bg-tile-hover",
               )}
             >
+              {p.id === "custom" ? "✎ " : ""}
               {p.chip}
             </button>
           ))}
@@ -261,7 +264,12 @@ export function ProfileView() {
             <Field label="Describe yourself in your own words" htmlFor="about">
               <Textarea
                 id="about"
-                rows={9}
+                rows={7}
+                placeholder={
+                  persona === "custom"
+                    ? "Tell us about yourself in your own words: your age, your job, what you want the money for and when, how much risk you're comfortable with, and anything you already invest in."
+                    : undefined
+                }
                 value={text}
                 onChange={(e) => setCustom({ persona, text: e.target.value })}
                 className="bg-panel-solid text-base leading-relaxed"

@@ -3,7 +3,7 @@ import { RotateCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHealth, type HealthStatus } from "@/lib/queries";
 
-const LOOK: Record<HealthStatus, { label: string; dot: string; box: string; title: string }> = {
+export const HEALTH_LOOK: Record<HealthStatus, { label: string; dot: string; box: string; title: string }> = {
   checking: {
     label: "Checking backend",
     dot: "bg-muted-foreground",
@@ -40,7 +40,7 @@ const LOOK: Record<HealthStatus, { label: string; dot: string; box: string; titl
 
 export function HealthBadge({ className }: { className?: string }) {
   const { status, refetch } = useHealth();
-  const look = LOOK[status];
+  const look = HEALTH_LOOK[status];
   return (
     <div
       role="status"

@@ -1,9 +1,12 @@
 "use client";
 import { AlertTriangle, Check, CircleHelp, ChevronDown, Copy, Download, X } from "lucide-react";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Component, useState, type ReactNode } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { PanelBody, PanelHead } from "@/components/panel";
-import { ApiError, type Profile } from "@/lib/api";
+import { ErrorNotice, Working } from "@/components/query-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Profile } from "@/lib/api";
 import { useAppState } from "@/lib/app-state";
 import { longDate } from "@/lib/display";
 import { useProof, type ProofClaim, type ProofMetric, type ProofRes, type ProofVerdict } from "@/lib/proof";
@@ -67,10 +70,10 @@ function VerdictCard({ claim, data }: { claim: ProofClaim; data: ProofRes }) {
         <v.Icon aria-hidden className="mt-0.5 size-5 shrink-0" />
         <div className="min-w-0">
           <p className="font-semibold text-foreground">{claim.claim}</p>
-          <p className="mt-0.5 text-sm font-semibold">{v.title}</p>
-          <p className="text-sm text-muted-foreground">{v.hint}</p>
+          <p className="mt-0.5 text-[0.95rem] font-semibold">{v.title}</p>
+          <p className="text-[0.95rem] text-muted-foreground">{v.hint}</p>
           {claim.evidence.length > 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-[13px] text-muted-foreground">
               Based on: {claim.evidence.map((e) => data.metrics.find((m) => m.id === e)?.label ?? e.replace(/^stress:/, "")).join(", ")}
               {code ? ` · result ${code.output}` : ""}
             </p>
@@ -86,7 +89,7 @@ function MetricsTable({ data }: { data: ProofRes }) {
     <div className="overflow-x-auto rounded-2xl border">
       <table className="w-full min-w-[520px] text-left text-sm">
         <caption className="sr-only">Strategy compared with the tech-heavy baseline</caption>
-        <thead className="bg-tile text-xs text-muted-foreground">
+        <thead className="bg-tile text-[13px] text-muted-foreground">
           <tr>
             <th scope="col" className="px-3 py-2 font-semibold">Measure</th>
             <th scope="col" className="px-3 py-2 font-semibold">{data.strategy.name}</th>
@@ -101,7 +104,7 @@ function MetricsTable({ data }: { data: ProofRes }) {
                 <span title={METRIC_HELP[m.id] ?? m.label} className="cursor-help underline decoration-dotted underline-offset-4">
                   {m.label}
                 </span>
-                {METRIC_HELP[m.id] && <span className="block text-xs font-normal text-muted-foreground">{METRIC_HELP[m.id]}</span>}
+                {METRIC_HELP[m.id] && <span className="block text-[13px] font-normal text-muted-foreground">{METRIC_HELP[m.id]}</span>}
               </th>
               <td className="money px-3 py-2">{fmt(m, m.strategy)}</td>
               <td className="money px-3 py-2">{fmt(m, m.baseline)}</td>
@@ -120,6 +123,8 @@ function MetricsTable({ data }: { data: ProofRes }) {
 }
 
 function StressChart({ data }: { data: ProofRes }) {
+  // On phones inactive views are display:none (zero size), so only measure the chart while Proof is on screen.
+  const onScreen = useSearchParams().get("view") === "proof";
   const rows = data.stress.map((s) => ({ name: s.name, [data.strategy.name]: s.strategy * 100, [data.baseline.name]: s.baseline * 100 }));
   if (rows.length === 0) return null;
   const summary = data.stress
@@ -128,7 +133,8 @@ function StressChart({ data }: { data: ProofRes }) {
   return (
     <figure>
       <div role="img" aria-label={`Fall during past sell-offs. ${summary}`} className="h-[260px] w-full rounded-2xl border p-2">
-        <ResponsiveContainer width="100%" height="100%">
+        {onScreen && (
+        <ResponsiveContainer width="100%" height="100%" minWidth={280} minHeight={160}>
           <BarChart data={rows} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--border)" />
             <XAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
@@ -142,8 +148,9 @@ function StressChart({ data }: { data: ProofRes }) {
             <Bar dataKey={data.baseline.name} fill="var(--compare)" radius={[6, 6, 0, 0]} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
+        )}
       </div>
-      <figcaption className="mt-1.5 text-xs text-muted-foreground">
+      <figcaption className="mt-1.5 text-[13px] text-muted-foreground">
         How far each mix fell in a real past sell-off. A smaller bar (closer to zero) means a gentler fall.
       </figcaption>
     </figure>
@@ -165,12 +172,12 @@ function CodeBlock({ data, claim }: { data: ProofRes; claim: ProofClaim }) {
   }
   return (
     <details className="group rounded-2xl border bg-tile">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-semibold">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-base font-semibold">
         <span>Show me the code: {code.title}</span>
         <ChevronDown aria-hidden className="size-4 transition-transform group-open:rotate-180" />
       </summary>
       <div className="space-y-3 px-4 pb-4">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[13px] text-muted-foreground">
           This is the exact function that produced the number. Its fingerprint (SHA-256){" "}
           <code className="font-mono" title={code.sha256}>{shortHash(code.sha256)}</code> proves the code was not changed after the fact.
         </p>
@@ -178,16 +185,35 @@ function CodeBlock({ data, claim }: { data: ProofRes; claim: ProofClaim }) {
           <code>{code.source}</code>
         </pre>
         <div>
-          <p className="text-xs font-semibold text-muted-foreground">It printed:</p>
+          <p className="text-[13px] font-semibold text-muted-foreground">It printed:</p>
           <pre className="overflow-x-auto rounded-xl border bg-background p-3 font-mono text-[13px]"><code>{code.output}</code></pre>
         </div>
-        <button type="button" onClick={copy} className="glass inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold hover:bg-tile-hover">
+        <button type="button" onClick={copy} className="glass inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold hover:bg-tile-hover">
           <Copy aria-hidden className="size-4" />
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
     </details>
   );
+}
+
+// A malformed-but-valid response must never blank the panel: show a notice and keep the rest of the app alive.
+class ProofBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.error("Proof view failed to render", error);
+  }
+  render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <p role="alert" className="rounded-xl border border-warn-line bg-warn-bg px-4 py-3">
+        The proof came back in a shape we couldn’t display. Switch view and back to try again.
+      </p>
+    );
+  }
 }
 
 export function ProofView() {
@@ -206,7 +232,7 @@ export function ProofView() {
             <button
               type="button"
               onClick={() => download("reproduce_proof.py", data.script)}
-              className="glass inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold hover:bg-tile-hover"
+              className="glass inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold hover:bg-tile-hover"
             >
               <Download aria-hidden className="size-4" />
               Download reproducible script
@@ -220,16 +246,17 @@ export function ProofView() {
             No profile built yet, so this proof uses an example profile (Priya, software engineer).
           </p>
         )}
-        {q.isPending && <p role="status" className="text-muted-foreground">Running the tests on past prices…</p>}
-        {q.isError && (
-          <p role="alert" className="rounded-xl border border-warn-line bg-warn-bg px-3 py-2 text-warn">
-            {q.error instanceof ApiError ? q.error.message : "Something went wrong while running the proof."}{" "}
-            <button type="button" className="underline" onClick={() => void q.refetch()}>Try again</button>
-          </p>
+        {!data && !q.isError && (
+          <div className="space-y-3">
+            <Working label="Running the tests on past prices" />
+            <Skeleton className="h-24 w-full rounded-2xl" />
+            <Skeleton className="h-24 w-full rounded-2xl" />
+          </div>
         )}
+        {q.isError && <ErrorNotice error={q.error} onRetry={() => void q.refetch()} />}
         {data && (
-          <>
-            <p className="text-sm text-muted-foreground">
+          <ProofBoundary>
+            <p className="text-[0.95rem] text-muted-foreground">
               Tested on prices from {longDate(data.window.from)} to {longDate(data.window.to)}, the day before {longDate(data.sim_date)}.
               Nothing after that date was used.
             </p>
@@ -264,7 +291,7 @@ export function ProofView() {
                 </ul>
               </section>
             )}
-          </>
+          </ProofBoundary>
         )}
       </PanelBody>
     </>

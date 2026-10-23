@@ -94,10 +94,16 @@ curl -s http://127.0.0.1:4040/api/tunnels
 
 ### Frontend (redeploy to Vercel)
 
+On the machine whose Vercel account owns `faraazs-projects-98286cae/dont-double-down-t6`:
+
 ```bash
 cd frontend
-./scripts/deploy.sh
+./scripts/deploy-spark.sh              # tsc + lint + build, sync demo data, log in/link if needed, deploy to production, smoke-test
+./scripts/deploy-spark.sh --preview    # same, but a preview URL instead of production
 ```
+
+It pins the Vercel CLI (`VERCEL_CLI_VERSION`, default 65.2.0) and never reads `.env` files. The older
+`./scripts/deploy.sh` still works if the folder is already linked and you are logged in.
 
 This is idempotent — re-run it any time after a frontend change. It syncs
 demo mocks (if the `sync-mocks` npm script exists) and runs
@@ -182,6 +188,9 @@ the URL, either:
 
 ## Known issues / what's left
 
+- **(Fixed 2026-10-23) Mobile layout.** The overflow/clipping below was caused by a header that wrapped into several rows plus a
+  tour bar, a dock and a footer that left ~60px for the page. The app is now a slim top bar, one full-height panel and a bottom tab
+  bar on phones. Original report kept for history:
 - **Mobile layout overflow.** Headless-Chrome screenshots at 390x844
   (iPhone viewport) of `/` and `/ask` both show horizontal clipping: the
   simulation-date banner, suggestion chips (e.g. "Why is my deposit in

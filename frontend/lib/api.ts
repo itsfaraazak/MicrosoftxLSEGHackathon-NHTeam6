@@ -77,6 +77,8 @@ type CallOptions<S extends z.ZodType> = {
   schema: S;
   timeoutMs: number;
   demoFile?: string;
+  // HTTP statuses that must reach the caller instead of silently loading demo data (e.g. replay 404 -> re-register, retry).
+  noFallbackStatuses?: number[];
   signal?: AbortSignal;
 };
 
@@ -135,11 +137,20 @@ async function call<S extends z.ZodType>(opts: CallOptions<S>): Promise<z.output
   }
   if (!res.ok || notJson) {
     // A half-built backend (HTML 500s, NotImplementedError) falls back to demo data too, clearly labelled.
-    if (DEMO_FALLBACK && opts.demoFile) return fromDemo(endpoint, opts.demoFile, opts.schema);
+    if (DEMO_FALLBACK && opts.demoFile && !opts.noFallbackStatuses?.includes(res.status)) {
+      return fromDemo(endpoint, opts.demoFile, opts.schema);
+    }
+    // Backend error bodies look like {"error": "...", "fallback": true}: surface the reason, not just the status.
+    const serverMsg =
+      !notJson && json && typeof json === "object" && typeof (json as { error?: unknown }).error === "string"
+        ? (json as { error: string }).error.slice(0, 160)
+        : null;
     throw new ApiError(
       res.ok ? "not-json" : "http",
       endpoint,
-      res.ok ? "The backend replied with something that isn't JSON" : `The backend returned ${res.status}`,
+      res.ok
+        ? "The backend replied with something that isn't JSON"
+        : serverMsg ?? `The backend returned ${res.status}`,
       { status: res.status },
     );
   }
@@ -164,10 +175,11 @@ export const api = {
       method: "POST", path: "/api/compare", body: { profiles, sim_date }, schema: CompareResSchema,
       timeoutMs: LLM_TIMEOUT_MS, demoFile: "compare", signal,
     }),
-  replay: (profile_id: string, from: string, to: string, signal?: AbortSignal) =>
+  replay: (profile_id: string, from: string, to: string, signal?: AbortSignal, opts?: { fallbackOn404?: boolean }) =>
     call({
       path: `/api/replay?${new URLSearchParams({ profile_id, from, to })}`, schema: ReplayResSchema,
       timeoutMs: LLM_TIMEOUT_MS, demoFile: "replay", signal,
+      noFallbackStatuses: opts?.fallbackOn404 === false ? [404] : undefined,
     }),
   ask: (question: string, profile: Profile, sim_date: string, signal?: AbortSignal) =>
     call({

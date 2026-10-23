@@ -1,5 +1,5 @@
 // Demo presets. These are user inputs typed on someone's behalf, not data: every number on screen still comes from the API.
-export type PersonaId = "priya" | "tom" | "fiona";
+export type PersonaId = "priya" | "tom" | "fiona" | "custom";
 
 export type Persona = {
   id: PersonaId;
@@ -40,13 +40,23 @@ export const PERSONAS: Persona[] = [
   },
 ];
 
+// "Write your own": the text box starts empty and the user describes themselves. Not part of PERSONAS, so Compare never uses it.
+export const CUSTOM_PERSONA: Persona = {
+  id: "custom",
+  name: "You",
+  chip: "Write your own",
+  job: "Your own profile",
+  text: "",
+};
+
 export const DEFAULT_PERSONA: PersonaId = "priya";
 
 export function isPersonaId(v: string | null): v is PersonaId {
-  return PERSONAS.some((p) => p.id === v);
+  return v === "custom" || PERSONAS.some((p) => p.id === v);
 }
 
 export function personaById(id: PersonaId): Persona {
+  if (id === "custom") return CUSTOM_PERSONA;
   return PERSONAS.find((p) => p.id === id) ?? PERSONAS[0];
 }
 

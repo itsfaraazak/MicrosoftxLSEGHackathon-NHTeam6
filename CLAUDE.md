@@ -1,4 +1,4 @@
-# Don't Double Down — Microsoft x LSEG London Hackathon 2026 (Team 06)
+# SPARK (Smart Portfolio Advisor for Retail Knowledge, formerly Don't Double Down) — Microsoft x LSEG London Hackathon 2026 (Team 06)
 
 AI investment companion. Client: everyday retail investor with $100k. Builds a portfolio around their whole life
 (job exposure, goals, holdings) so savings don't bet on the same thing as the paycheck. Demo = "time machine"
@@ -72,7 +72,7 @@ Frontend on Vercel (stable URL, `frontend/vercel.json` proxies `/api/*` to the l
 - **AI layer** (`backend/ai/`): `guardrails.py` (look-ahead/injection/distress refused in code before the LLM), `number_check.py` (every number must match a Fact), `functions.py` (parse_profile, map_exposure, explain, answer, coach), `llm.py` (portal client, timeouts, fast model), `rigor.py` (collects per-request trace -> `meta` on responses).
 - **Engine** (`backend/engine/`): `data_clock` (only door to prices), `exposure` (job -> sector overlap), `portfolio` (allocation rules 1-6 + advisory flags), `guard` (drawdown events, replay), `agent` (Autopilot: whitelist, caps, kill switch, approval), `personas` (Priya/Tom/Fiona).
 - **Quant proof** (`backend/quant/`): backtest + verdicts decided by code, ships the real source of each function, a sha256 and a reproducible script. Honest "not supported" verdicts are shown.
-- **Frontend** (`frontend/`): single-page orbit app (Bipin) with profile, portfolio, compare, time machine, Ask, Proof views; guided tour, rigor drawer, swipe gestures, live-data button (where merged).
+- **Frontend** (`frontend/`): single-page orbit app (Bipin) with profile, portfolio, compare, time machine, Ask, Proof views; rigor drawer, live-data button, data-sources explainer, "Write your own" profile. The guided tour and swipe-to-change-view were removed (they ate the screen); phones get a bottom tab bar and one full-height panel.
 - **Tests:** ~280 backend tests incl. ~195 red-team cases. Data clock leak test, number-check tests, 2022 results must not change when data is extended.
 
 ## Branches
@@ -87,10 +87,10 @@ Frontend on Vercel (stable URL, `frontend/vercel.json` proxies `/api/*` to the l
 
 
 ## Status as of 2026-10-23 ~15:00 (read this first)
-- **Public demo:** https://dont-double-down-t6.vercel.app (Vercel frontend; `frontend/middleware.ts` proxies `/api/*` to this laptop's backend through ngrok `https://superbowl-jalapeno-mower.ngrok-free.dev` -> port 5070). If the laptop/tunnel is down the site falls back to demo data. Redeploy: `bash frontend/scripts/deploy.sh`. Runbook: `docs/DEPLOY.md`, `docs/demo-runbook.md`.
+- **Public demo:** https://dont-double-down-t6.vercel.app (Vercel frontend; `frontend/middleware.ts` proxies `/api/*` to this laptop's backend through ngrok `https://superbowl-jalapeno-mower.ngrok-free.dev` -> port 5070). If the laptop/tunnel is down the site falls back to demo data. Redeploy (needs Faraaz's Vercel login): `frontend/scripts/deploy-spark.sh`. Runbook: `docs/DEPLOY.md`, `docs/demo-runbook.md`.
 - **Time machine** replays a client by first name: `/api/portfolio` registers the profile (`engine/personas.remember`), `/api/replay?profile_id=<first name>` finds it. Unknown name -> 404 "build a plan first".
 - **Data:** `docs/pitch/SLIDE-ANSWERS.md` (every slide question answered, data-source table, known weaknesses), `backend/data/SOURCES.md`, `docs/SPEC.md` (PDF spec vs code: met/partial/missing).
-- **Known issues:** phone layout clipping and a reported phone freeze were being fixed (check `git log`/`docs/HANDOFF.md`; workaround `?tour=0`); Proof tab overlap row uses the example mock portfolio (real engine gives Priya 5.4% vs 21.5%); Fiona's overlap is above the baseline; sector weights are end-2021 approximations; Cosmos DB / App Insights are NOT wired, do not claim them.
+- **Known issues:** phone layout clipping and a reported phone freeze were being fixed (check `git log`/`docs/HANDOFF.md`; fixed 2026-10-23 (tour removed, phone layout rebuilt)); Proof tab overlap row uses the example mock portfolio (real engine gives Priya 5.4% vs 21.5%); Fiona's overlap is above the baseline; sector weights are end-2021 approximations; Cosmos DB / App Insights are NOT wired, do not claim them.
 - **Before judging:** `caffeinate -dimsu`; start backend (1 worker) + `ngrok http 5070`; run `backend/scripts/prewarm.py`; test the public URL on a phone.
 
 ## Style

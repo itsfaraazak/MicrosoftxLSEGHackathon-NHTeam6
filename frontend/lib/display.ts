@@ -104,3 +104,8 @@ export function monthLabel(iso: string): string {
   const d = toDate(iso);
   return d ? monthFmt.format(d) : iso;
 }
+
+// "Priya" -> "Priya’s"; the nameless custom profile is called "You" -> "Your".
+export function possessive(name: string): string {
+  return name.trim().toLowerCase() === "you" ? "Your" : `${name}’s`;
+}

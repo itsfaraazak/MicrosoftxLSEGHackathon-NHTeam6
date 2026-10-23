@@ -46,7 +46,7 @@ export function LiveToggle() {
         type="button"
         size="sm"
         variant={live.active ? "outline" : "default"}
-        className="h-9 flex-none rounded-full px-3.5 font-semibold"
+        className="h-11 min-w-11 flex-none rounded-full px-3 font-semibold md:h-9 md:px-3.5"
         disabled={goLive.isPending}
         onClick={live.active ? handleBackTo2022 : handleGoLive}
         aria-label={live.active ? "Back to 2022: leave live market data" : "Go live: fetch today's real market data"}

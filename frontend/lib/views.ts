@@ -1,9 +1,10 @@
+// `short` is the label for the phone tab bar.
 export const VIEWS = [
-  { id: "profile", title: "My profile" },
-  { id: "portfolio", title: "My portfolio" },
-  { id: "replay", title: "Time machine" },
-  { id: "ask", title: "Ask" },
-  { id: "proof", title: "Proof" },
+  { id: "profile", title: "My profile", short: "Profile" },
+  { id: "portfolio", title: "My portfolio", short: "Plan" },
+  { id: "replay", title: "Time machine", short: "Replay" },
+  { id: "ask", title: "Ask", short: "Ask" },
+  { id: "proof", title: "Proof", short: "Proof" },
 ] as const;
 
 export type ViewId = (typeof VIEWS)[number]["id"];

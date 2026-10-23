@@ -5,18 +5,34 @@ import { ErrorNotice, InlineContractNotice, Working } from "@/components/query-s
 import { useAppState } from "@/lib/app-state";
 import { OverlapScoreSchema, readEnhancement, type Portfolio } from "@/lib/api";
 import { startDemoPrep, useDemoPrep } from "@/lib/demo-prep";
-import { fractionPct, tickerName, usd } from "@/lib/display";
+import { fractionPct, possessive, tickerName, usd } from "@/lib/display";
 import { PERSONAS, type Persona } from "@/lib/personas";
+import type { Portfolio as PortfolioT } from "@/lib/api";
 
-function PersonCard({ person, portfolio }: { person: Persona; portfolio: Portfolio }) {
+function PersonCard({
+  person,
+  portfolio,
+  isYou,
+  yours,
+}: {
+  person: Persona;
+  portfolio: Portfolio;
+  isYou: boolean;
+  yours?: boolean;
+}) {
   const overlap = readEnhancement(OverlapScoreSchema, portfolio.overlap_score, `${person.name}.overlap_score`);
   const top = [...portfolio.positions].sort((a, b) => b.amount_usd - a.amount_usd).slice(0, 3);
   return (
-    <article className="tile flex flex-col gap-3 rounded-2xl p-4" aria-label={`${person.name}’s plan`}>
+    <article
+      className={`tile flex flex-col gap-3 rounded-2xl p-4 ${isYou ? "border-primary ring-2 ring-primary/40" : ""}`}
+      aria-label={`${possessive(person.name)} plan`}
+    >
       <header>
-        <h3 className="font-heading text-lg font-semibold">{person.name}</h3>
+        <p className="mb-1 text-[13px] font-bold text-primary">
+          {yours ? "You" : isYou ? "You are viewing this one" : "Example person, not you"}
+        </p>
+        <h3 className="font-heading text-lg font-semibold">{yours ? "Your plan" : person.name}</h3>
         <p className="text-sm text-muted-foreground">{person.job}</p>
-        <p className="text-xs text-muted-foreground">Your input, not data from the backend</p>
       </header>
       <AllocationDonut positions={portfolio.positions} selected={null} onSelect={() => {}} className="max-w-[130px]" compact />
       <div className="grid grid-cols-2 gap-2 text-sm">
@@ -51,7 +67,7 @@ function PersonCard({ person, portfolio }: { person: Persona; portfolio: Portfol
 }
 
 export function CompareTab() {
-  const { plan } = useAppState();
+  const { plan, persona, profile } = useAppState();
   const { prep, status } = useDemoPrep();
   const simDate = plan?.portfolio.sim_date;
 
@@ -66,15 +82,23 @@ export function CompareTab() {
     );
   }
   const { portfolios } = prep.compare;
+  // A custom user is not one of the three examples, so their own plan goes first.
+  const mine: PortfolioT | undefined = persona === "custom" ? plan?.portfolio : undefined;
+  const mineAs: Persona = { id: "custom", name: "You", chip: "You", job: profile?.job_title || "Your own profile", text: "" };
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm text-muted-foreground">Same $100,000, three different lives, three different plans.</p>
+      <p className="text-[15px] text-muted-foreground">
+        The same $100,000 for different lives. The three people below are <strong>fictional examples</strong>, shown so you can see how
+        SPARK changes the plan for a different job and goal.
+        {mine ? " The highlighted card is yours." : " The highlighted card is the person you are viewing."}
+      </p>
       {portfolios.length !== PERSONAS.length && (
         <InlineContractNotice message={`expected ${PERSONAS.length} portfolios, got ${portfolios.length}`} />
       )}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {mine && <PersonCard person={mineAs} portfolio={mine} isYou yours />}
         {PERSONAS.slice(0, portfolios.length).map((person, i) => (
-          <PersonCard key={person.id} person={person} portfolio={portfolios[i]} />
+          <PersonCard key={person.id} person={person} portfolio={portfolios[i]} isYou={persona === person.id} />
         ))}
       </div>
     </div>

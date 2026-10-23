@@ -2,7 +2,7 @@
 import { motion, type TargetAndTransition } from "motion/react";
 import { useRef, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
-import { panelId, tabId, type ViewId } from "@/lib/views";
+import { panelId, type ViewId } from "@/lib/views";
 
 export type OrbitView = { id: ViewId; title: string; content: React.ReactNode };
 
@@ -22,8 +22,20 @@ function useReducedMotionPref(): boolean {
   );
 }
 
-// Stage width drives the carousel geometry; the server snapshot is a desktop default.
-function useWidth(ref: React.RefObject<HTMLElement | null>): number {
+// Phones get a plain full-height panel: no 3D, springs or blur, which is what made them lag.
+function useIsNarrow(): boolean {
+  return useSyncExternalStore(
+    (notify) => {
+      const mq = window.matchMedia("(max-width: 859px)");
+      mq.addEventListener("change", notify);
+      return () => mq.removeEventListener("change", notify);
+    },
+    () => window.matchMedia("(max-width: 859px)").matches,
+    () => false,
+  );
+}
+
+function useStageWidth(ref: React.RefObject<HTMLElement | null>): number {
   return useSyncExternalStore(
     (notify) => {
       const el = ref.current;
@@ -61,13 +73,39 @@ export function Orbit({
   onSelect: (i: number) => void;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const width = useWidth(stageRef);
+  const width = useStageWidth(stageRef);
   const reduced = useReducedMotionPref();
+  const narrow = useIsNarrow();
 
-  const narrow = width < 860;
-  const panelW = narrow ? width * 0.92 : Math.min(1000, width * 0.84);
-  const side = narrow ? width * 0.96 : Math.min(width * 0.66, 760);
+  const panelW = Math.min(1000, width * 0.84);
+  const side = Math.min(width * 0.66, 760);
   const n = views.length;
+
+  if (narrow) {
+    // Every view stays mounted (so typed text and results survive tab changes) but only the active one is displayed.
+    return (
+      <div ref={stageRef} className="relative flex min-h-0 flex-1 flex-col px-2 pb-2">
+        {views.map((v, i) => {
+          const isActive = i === active;
+          return (
+            <section
+              key={v.id}
+              id={panelId(v.id)}
+              role="tabpanel"
+              aria-label={v.title}
+              hidden={!isActive}
+              className={cn(
+                "min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-panel-solid",
+                isActive ? "flex motion-safe:animate-in motion-safe:fade-in motion-safe:duration-150" : "hidden",
+              )}
+            >
+              {v.content}
+            </section>
+          );
+        })}
+      </div>
+    );
+  }
 
   // Swipe navigation is handled centrally by `useSwipe` (window pointer listeners) in
   // orbit-app.tsx. This stage used to also bind its own touchstart/touchend handlers that
@@ -91,7 +129,7 @@ export function Orbit({
               key={v.id}
               id={panelId(v.id)}
               role="tabpanel"
-              aria-labelledby={tabId(v.id)}
+              aria-label={v.title}
               aria-hidden={!isActive}
               initial={false}
               animate={pose(off, side, reduced)}

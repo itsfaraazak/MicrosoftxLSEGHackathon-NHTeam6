@@ -45,10 +45,27 @@ export function useHealth(): { status: HealthStatus; refetch: () => void } {
   return { status, refetch: () => void q.refetch() };
 }
 
-export function useReplay(profileId: string | null, from: string, to: string) {
+// The backend registers a built plan under the person's lowercased first name. A missing name uses "you",
+// matching what the profile builder sets, so the key is never empty.
+export function replayProfileId(profile: Profile): string {
+  return (profile.name.trim().split(/\s+/)[0] ?? "").toLowerCase() || "you";
+}
+
+export function useReplay(profile: Profile | null, simDate: string, from: string, to: string) {
+  const profileId = profile ? replayProfileId(profile) : null;
   return useQuery({
     queryKey: queryKeys.replay(profileId ?? "", from, to),
-    queryFn: ({ signal }) => api.replay(profileId ?? "", from, to, signal),
+    queryFn: async ({ signal }) => {
+      if (!profile || !profileId) throw new Error("No profile to replay");
+      try {
+        return await api.replay(profileId, from, to, signal, { fallbackOn404: false });
+      } catch (e) {
+        if (!(e instanceof ApiError && e.kind === "http" && e.detail?.status === 404)) throw e;
+        // The backend forgot this person (restart, other worker): register the plan again, then retry once.
+        await api.portfolio(profile, simDate, signal);
+        return api.replay(profileId, from, to, signal);
+      }
+    },
     enabled: profileId !== null,
   });
 }

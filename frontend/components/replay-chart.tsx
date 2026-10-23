@@ -1,14 +1,26 @@
 "use client";
-import { useId, useState } from "react";
+import { useId, useRef, useState, useSyncExternalStore } from "react";
 import type { ReplayMonth } from "@/lib/api";
 import { longDate, monthLabel, usd, usdCompact } from "@/lib/display";
 
-const W = 640;
-const H = 380;
-const L = 78;
 const RIGHT = 14;
 const TOP = 12;
 const BOTTOM = 34;
+
+// Chart units = CSS pixels: the SVG is sized to its container, so text keeps a readable size on phones too.
+function useBoxWidth(ref: React.RefObject<HTMLElement | null>): number {
+  return useSyncExternalStore(
+    (notify) => {
+      const el = ref.current;
+      if (!el) return () => {};
+      const ro = new ResizeObserver(notify);
+      ro.observe(el);
+      return () => ro.disconnect();
+    },
+    () => ref.current?.clientWidth ?? 560,
+    () => 560,
+  );
+}
 
 const toTime = (iso: string) => Date.parse(`${iso.slice(0, 10)}T00:00:00Z`);
 
@@ -30,7 +42,12 @@ export function ReplayChart({
   techLabel: string;
 }) {
   const hatchId = useId();
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const boxW = useBoxWidth(wrapRef);
   const [hover, setHover] = useState<number | null>(null);
+  const W = Math.max(280, Math.min(boxW, 760));
+  const H = Math.round(Math.max(220, Math.min(W * 0.62, 380)));
+  const L = W < 480 ? 60 : 72;
 
   const t0 = toTime(windowStart);
   const t1 = toTime(windowEnd);
@@ -41,7 +58,11 @@ export function ReplayChart({
   const hi = extent[1] + span * 0.1;
   const y = (v: number) => TOP + (1 - (v - lo) / (hi - lo)) * (H - TOP - BOTTOM);
 
+  // "Jan 2022" -> "Jan ’22" on phones, so neighbouring labels don't touch.
+  const dateTick = (iso: string) => (W < 480 ? monthLabel(iso).replace(/ 20(\d\d)$/, " ’$1") : monthLabel(iso));
   const yTicks = [0, 1, 2, 3].map((k) => lo + ((hi - lo) * k) / 3);
+  // A narrow range (the start of the replay) needs full dollars, or every tick reads "$100k".
+  const tickLabel = (v: number) => (hi - lo < 6000 ? usd(Math.round(v / 100) * 100) : usdCompact(v));
   const xTicks: string[] = [];
   for (let d = new Date(t0); d.getTime() <= t1; d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 6, 1))) {
     xTicks.push(d.toISOString().slice(0, 10));
@@ -73,7 +94,7 @@ export function ReplayChart({
     : "Line chart with no months shown yet.";
 
   return (
-    <div>
+    <div ref={wrapRef}>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
@@ -91,19 +112,19 @@ export function ReplayChart({
         {yTicks.map((v) => (
           <g key={v}>
             <line x1={L} x2={W - RIGHT} y1={y(v)} y2={y(v)} stroke="var(--border)" strokeDasharray="3 4" />
-            <text x={L - 8} y={y(v) + 4} textAnchor="end" fontSize="18" fill="var(--muted-foreground)" className="money">
-              {usdCompact(v)}
+            <text x={L - 8} y={y(v) + 4} textAnchor="end" fontSize="14" fill="var(--muted-foreground)" className="money">
+              {tickLabel(v)}
             </text>
           </g>
         ))}
         {xTicks.map((d) => (
-          <text key={d} x={x(d)} y={H - 8} textAnchor="middle" fontSize="18" fill="var(--muted-foreground)">
-            {monthLabel(d)}
+          <text key={d} x={x(d)} y={H - 8} textAnchor="middle" fontSize="14" fill="var(--muted-foreground)">
+            {dateTick(d)}
           </text>
         ))}
 
         <rect x={frontier + 6} y={TOP} width={Math.max(W - RIGHT - frontier - 6, 0)} height={H - TOP - BOTTOM} fill={`url(#${hatchId})`} opacity="0.7" />
-        <text x={(frontier + 6 + W - RIGHT) / 2} y={TOP + 24} textAnchor="middle" fontSize="14" fontWeight="600" fill="var(--muted-foreground)">
+        <text x={(frontier + 6 + W - RIGHT) / 2} y={TOP + 24} textAnchor="middle" fontSize="15" fontWeight="600" fill="var(--muted-foreground)">
           Not visible yet
         </text>
 

@@ -34,13 +34,12 @@ function Calm({ title, children }: { title: string; children: React.ReactNode })
 }
 
 export function ReplayView() {
-  const { profile, plan, clock, setClock, live, backTo2022 } = useAppState();
+  const { profile, plan, persona, clock, setClock, live, backTo2022 } = useAppState();
   const isActiveView = useSearchParams().get("view") === "replay";
   const [playing, setPlaying] = useState(false);
 
-  // The backend's replay id convention is still open (see HANDOFF); we send the lowercased first name.
-  const profileId = plan && profile ? (profile.name.trim().split(/\s+/)[0] ?? "").toLowerCase() || null : null;
-  const replay = useReplay(profileId, SIM_START, SIM_END);
+  const planOwner = !profile || persona === "custom" || profile.name.trim().toLowerCase() === "you" ? "Your" : `${profile.name}’s`;
+  const replay = useReplay(plan && profile ? profile : null, plan?.portfolio.sim_date ?? SIM_START, SIM_START, SIM_END);
   const months = replay.data?.months ?? NO_MONTHS;
   const events = replay.data?.events;
   const last = months.length - 1;
@@ -130,7 +129,7 @@ export function ReplayView() {
         </Button>
       </div>
     );
-  } else if (replay.isPending) {
+  } else if (replay.isLoading || replay.isPending) {
     body = (
       <div className="flex flex-col gap-4">
         <Working label="Loading the time machine" />
@@ -148,7 +147,7 @@ export function ReplayView() {
           <div className="mb-2 flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold">
             <span className="inline-flex items-center gap-2">
               <i aria-hidden className="inline-block h-[3px] w-[18px] rounded bg-plan" />
-              {profile.name}’s plan
+              {planOwner} plan
             </span>
             <span className="inline-flex items-center gap-2">
               <i aria-hidden className="inline-block h-[3px] w-[18px] rounded bg-compare" />
@@ -177,7 +176,7 @@ export function ReplayView() {
         <div className="flex flex-col gap-3.5">
           <div className="grid grid-cols-2 gap-3">
             <div className="tile rounded-2xl p-3.5">
-              <div className="text-sm font-semibold text-muted-foreground">{profile.name}’s plan</div>
+              <div className="text-sm font-semibold text-muted-foreground">{planOwner} plan</div>
               <div className="money font-heading text-[clamp(18px,1.8vw,24px)] font-semibold">{usd(now.ours)}</div>
             </div>
             <div className="tile rounded-2xl p-3.5">

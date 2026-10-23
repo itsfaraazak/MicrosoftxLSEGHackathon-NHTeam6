@@ -10,3 +10,7 @@
 - 2026-10-23 · Demo fallback (`NEXT_PUBLIC_DEMO_FALLBACK=1`) also covers HTML 5xx / non-JSON replies, not just network errors, and the badge says "Offline demo data" whenever it is in use · a half-built backend (NotImplementedError 500s) must not break the demo, and the UI must not call saved data "live" · P1
 - 2026-10-23 · Compare uses a separate sessionStorage cache ("demo-prep") that Reset demo keeps · Compare stays instant after a reset and a refresh doesn't redo LLM calls · P1
 - 2026-10-23 · Cut: Autopilot, `?` shortcuts panel, P persona cycle, "Clear all caches" button · behind schedule; core story first · P1
+- 2026-10-23 · Product renamed SPARK (Smart Portfolio Advisor for Retail Knowledge); name lives in `frontend/lib/brand.ts` and the page title · team rename · P1
+- 2026-10-23 · Removed the guided tour and swipe-to-change-view; phones use a bottom tab bar and render one full-height panel (no 3D, no backdrop blur) · tour bar + header + dock + footer left ~60px of a 664px phone screen, and stacked blur/3D panels made phones lag · P1
+- 2026-10-23 · Added a "Write your own" persona (empty text box); a nameless profile is sent as "You" so the time machine can find it (backend registry is keyed by first name and ignores empty names) · P1
+- 2026-10-23 · Every view says whose plan it shows ("Viewing: Priya's plan · demo persona" / "Your own profile") and Compare labels the three others as fictional examples; the data-sources sheet explains whose data is whose · users mistook demo personas for themselves · P1

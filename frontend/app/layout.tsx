@@ -15,8 +15,8 @@ const unbounded = Unbounded({
 });
 
 export const metadata: Metadata = {
-  title: "Don’t Double Down",
-  description: "Your investments shouldn’t bet on the same thing your paycheck does. Educational hackathon project.",
+  title: "SPARK: Smart Portfolio Advisor for Retail Knowledge",
+  description: "SPARK builds a portfolio around your whole life, so your savings don’t bet on the same thing as your paycheck. Educational hackathon project, not financial advice.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

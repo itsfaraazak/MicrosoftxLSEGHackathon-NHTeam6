@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CompareTab } from "@/components/views/compare-tab";
 import { useAppState } from "@/lib/app-state";
 import { OverlapScoreSchema, TextEnhancementSchema, readEnhancement, type Fact, type Position } from "@/lib/api";
-import { fractionPct, tickerName, usd } from "@/lib/display";
+import { fractionPct, possessive, tickerName, usd } from "@/lib/display";
 import { cn } from "@/lib/utils";
 import { goToView } from "@/lib/views";
 
@@ -162,8 +162,9 @@ function PlanTab() {
 }
 
 export function PortfolioView() {
-  const { plan, profile } = useAppState();
-  const title = profile ? `${profile.name}’s ${usd(100000)} plan` : `Your ${usd(100000)} plan`;
+  const { plan, profile, persona } = useAppState();
+  // A custom user is always "You", whatever name the parser guessed.
+  const title = profile && persona !== "custom" ? `${possessive(profile.name)} ${usd(100000)} plan` : `Your ${usd(100000)} plan`;
   return (
     <>
       <PanelHead

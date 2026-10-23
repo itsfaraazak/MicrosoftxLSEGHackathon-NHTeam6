@@ -226,3 +226,21 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* Phones: no blur or 3D backdrop work (it makes scrolling and view changes stutter on mobile GPUs). */
+@media (max-width: 859px) {
+  .glass,
+  .glass-panel {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .glass-panel {
+    box-shadow: none;
+  }
+  .floor-grid {
+    display: none;
+  }
+  .atmosphere {
+    background: linear-gradient(180deg, var(--background) 0%, var(--background-2) 100%);
+  }
+}
