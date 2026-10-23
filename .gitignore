@@ -13,3 +13,4 @@ backend/data/local_store.jsonl
 # Credential sheets / screenshots of them must never be committed
 *.heic
 IMG_*
+backend/data/coach_cache.json
