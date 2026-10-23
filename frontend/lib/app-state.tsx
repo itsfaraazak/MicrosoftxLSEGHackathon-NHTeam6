@@ -2,12 +2,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { ParseResSchema, PortfolioResSchema, ProfileSchema, type ParseRes, type PortfolioRes, type Profile } from "@/lib/api";
+import { DEMO_PREP_KEY, resetDemoPrepStatus } from "@/lib/demo-prep";
 import { DEFAULT_PERSONA, isPersonaId, type PersonaId } from "@/lib/personas";
 import { clearSession, useSessionValue, writeSession } from "@/lib/session-store";
 
 export const SIM_START = "2022-01-03";
 export const SIM_END = "2023-12-29";
-export const DEMO_PREP_KEY = "demo-prep";
 
 export type SimClock = {
   date: string;
@@ -75,6 +75,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const clearAllCaches = useCallback(() => {
     clearSession();
+    resetDemoPrepStatus();
     queryClient.clear();
     setClock(INITIAL_CLOCK);
   }, [queryClient]);

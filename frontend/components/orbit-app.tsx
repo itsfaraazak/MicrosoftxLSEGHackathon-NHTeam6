@@ -1,6 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect } from "react";
+import { DemoPrep } from "@/components/demo-prep";
 import { Dock } from "@/components/dock";
 import { Orbit, type OrbitView } from "@/components/orbit";
 import { AskView } from "@/components/views/ask-view";
@@ -45,6 +46,7 @@ export function OrbitApp() {
 
   return (
     <>
+      <DemoPrep />
       <Orbit views={ORBIT_VIEWS} active={active} onSelect={select} />
       <Dock active={active} onSelect={select} />
     </>

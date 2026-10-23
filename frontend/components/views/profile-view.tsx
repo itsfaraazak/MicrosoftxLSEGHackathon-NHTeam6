@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { INITIAL_CLOCK, SIM_START, useAppState } from "@/lib/app-state";
 import type { Profile, Risk } from "@/lib/api";
 import { usd } from "@/lib/display";
+import { seedPersonaParse } from "@/lib/demo-prep";
 import { PERSONAS, personaById, type PersonaId } from "@/lib/personas";
 import { useBuildPortfolio, useParseProfile } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -191,7 +192,13 @@ export function ProfileView() {
   function read() {
     setEdits(null);
     build.reset();
-    parse.mutate(text, { onSuccess: (res) => setParsed(res) });
+    const untouchedPreset = custom?.persona !== persona;
+    parse.mutate(text, {
+      onSuccess: (res) => {
+        setParsed(res);
+        if (untouchedPreset) seedPersonaParse(persona, res);
+      },
+    });
   }
 
   function buildPlan() {

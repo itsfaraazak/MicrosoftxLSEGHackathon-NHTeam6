@@ -25,9 +25,6 @@ export function makeQueryClient() {
 export const queryKeys = {
   health: ["health"] as const,
   replay: (profileId: string, from: string, to: string) => ["replay", profileId, from, to] as const,
-  // Everything under "demo-prep" survives Reset demo; only "Clear all caches" drops it.
-  demoPrep: ["demo-prep"] as const,
-  compare: (names: string[], simDate: string) => ["demo-prep", "compare", ...names, simDate] as const,
 };
 
 export type HealthStatus = "checking" | "live" | "mock" | "offline" | "offline-demo";
@@ -52,14 +49,6 @@ export function useReplay(profileId: string | null, from: string, to: string) {
     queryKey: queryKeys.replay(profileId ?? "", from, to),
     queryFn: ({ signal }) => api.replay(profileId ?? "", from, to, signal),
     enabled: profileId !== null,
-  });
-}
-
-export function useCompare(profiles: Profile[] | null, simDate: string) {
-  return useQuery({
-    queryKey: queryKeys.compare(profiles?.map((p) => p.name) ?? [], simDate),
-    queryFn: ({ signal }) => api.compare(profiles ?? [], simDate, signal),
-    enabled: profiles !== null && profiles.length > 0,
   });
 }
 
