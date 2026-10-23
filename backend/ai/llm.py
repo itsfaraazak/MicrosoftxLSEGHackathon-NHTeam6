@@ -4,6 +4,7 @@ Tests monkeypatch `chat`; nothing else in the app talks to the model.
 Env (generic names win, Azure names are the fallback):
   LLM_BASE_URL / AZURE_OPENAI_ENDPOINT (+ '/openai/v1/')   LLM_API_KEY / AZURE_OPENAI_API_KEY
   LLM_MODEL / AZURE_OPENAI_DEPLOYMENT                      LLM_AUTH_HEADER (optional, e.g. 'api-key'; default Bearer)
+  LLM_API_VERSION (set => Azure deployments route + api-key header)  LLM_MAX_TOKENS  LLM_SEND_TEMPERATURE=1
   LLM_TIMEOUT_S (per call, default 12)                     LLM_DEADLINE_S (per request, default 18)
 
 Time limits: every `chat` call is capped by LLM_TIMEOUT_S and by whatever is left of the request deadline, with
@@ -90,18 +91,29 @@ def configured() -> bool:
 
 
 def _complete(messages: list[dict], model: str, temperature: float, json_mode: bool, timeout: float) -> str:
+    """LLM_API_VERSION set -> Azure style route {base}/openai/deployments/{model} with `api-key` header
+    (what the hackathon portal exposes). Otherwise plain OpenAI-compatible base URL."""
     from openai import OpenAI
     base, key, _ = _settings()
-    header = os.getenv("LLM_AUTH_HEADER")
+    version = os.getenv("LLM_API_VERSION")
+    header = os.getenv("LLM_AUTH_HEADER") or ("api-key" if version else "")
     headers = None
     if header:
         value = key
         if header.lower() == "authorization" and not key.lower().startswith("bearer "):
             value = f"Bearer {key}"
         headers = {header: value}
-    client = OpenAI(base_url=base, api_key=key, timeout=timeout, max_retries=0, default_headers=headers)
-    kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
-    r = client.chat.completions.create(model=model, messages=messages, temperature=temperature, **kwargs)
+    if version:
+        client = OpenAI(base_url=f"{base.rstrip('/')}/openai/deployments/{model}", api_key=key, timeout=timeout,
+                        max_retries=0, default_headers=headers, default_query={"api-version": version})
+    else:
+        client = OpenAI(base_url=base, api_key=key, timeout=timeout, max_retries=0, default_headers=headers)
+    kwargs: dict = {"max_completion_tokens": int(os.getenv("LLM_MAX_TOKENS") or 2000)}
+    if json_mode:
+        kwargs["response_format"] = {"type": "json_object"}
+    if os.getenv("LLM_SEND_TEMPERATURE") == "1":
+        kwargs["temperature"] = temperature
+    r = client.chat.completions.create(model=model, messages=messages, **kwargs)
     return r.choices[0].message.content or ""
 
 

@@ -130,7 +130,10 @@ def answer(question: str, profile: dict | Profile | None, sim_date: str, facts: 
             facts = build(profile, map_exposure(profile), sim_date)[1]
         except (ImportError, NotImplementedError):
             facts = _default_facts(sim_date)
-    prompt = (f"Answer the client's question using only these facts. If they don't cover it, say you don't know.\n"
+    prompt = (f"Answer the client's question in 2-4 plain sentences using only these facts. If they don't cover it, say you don't know.\n"
+              f"How the portfolio is built (rules in code, you may explain them): sectors the client's job already depends on "
+              f"are cut by half and the difference is spread across other sectors; money needed within 5 years goes in "
+              f"short-term Treasuries; no single ETF is above 25%.\n"
               f"Client: {profile.job_title} in {profile.industry}.\nFacts:\n{_facts_prompt(facts)}\n"
               f"Question: {guardrails.fence(question)}")
     text = _checked(prompt, facts, sim_date, "I don't have enough information in today's data to answer that.")
