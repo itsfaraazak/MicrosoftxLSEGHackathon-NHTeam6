@@ -1,9 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  // The app is one orbit at "/"; old per-screen routes deep-link into it.
+  redirects() {
+    return [
+      { source: "/portfolio", destination: "/?view=portfolio", permanent: false },
+      { source: "/replay", destination: "/?view=replay", permanent: false },
+    ];
+  },
   turbopack: {
     rules: {
       "*.css": {

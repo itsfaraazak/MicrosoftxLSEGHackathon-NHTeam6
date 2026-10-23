@@ -4,3 +4,5 @@
 - 2026-10-23 · Git-committed docs are the shared Claude context (no external tool) · zero setup for every teammate · team
 - 2026-10-23 · Contract additions (optional): Position.reason, Portfolio.baseline_overlap_score; LLM endpoints fail fast with {"error","fallback":true} 504/502 (parse keeps 422); /api/ask accepts profile=null · frontend owner request; mocks updated same commit · B
 - 2026-10-23 · LLM client is provider-flexible (LLM_BASE_URL/LLM_API_KEY/LLM_MODEL, AZURE_OPENAI_* fallback). Organizer portal is a Blazor login page, API shape unknown; no extra Azure resources unless free and subscription exists (docs/context/AZURE.md) · B
+- 2026-10-23 · Frontend work lives on branch `bipin-frontend` (not `p1/frontend`) · branch already created; one name for the whole day · P1
+- 2026-10-23 · Frontend validates every response with zod and degrades per section (core fields strict, enhancement fields optional) · teammates' backends will drift during the day; demo must not white-screen · P1
