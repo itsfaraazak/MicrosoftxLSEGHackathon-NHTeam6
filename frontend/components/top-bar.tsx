@@ -1,7 +1,9 @@
 "use client";
 import { MoonStar, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { DataSourcesChip } from "@/components/data-sources-chip";
 import { HealthBadge } from "@/components/health-badge";
+import { LiveToggle } from "@/components/live-toggle";
 import { SimClock } from "@/components/sim-clock";
 
 function BrandMark() {
@@ -35,8 +37,12 @@ export function TopBar() {
         <BrandMark />
         <span className="hidden sm:inline">Don’t Double Down</span>
       </div>
-      <SimClock />
+      <div className="flex items-center gap-2">
+        <SimClock />
+        <LiveToggle />
+      </div>
       <div className="col-span-2 flex items-center justify-center gap-2 md:col-span-1 md:justify-end">
+        <DataSourcesChip className="hidden sm:inline-flex" />
         <HealthBadge />
         <ThemeToggle />
       </div>

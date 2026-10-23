@@ -19,3 +19,36 @@ def get_prices(tickers: list[str], as_of: str) -> pd.DataFrame:
     df = _load().loc[:as_of, tickers]
     assert df.empty or df.index.max() <= pd.Timestamp(as_of), "future data leaked"
     return df
+
+
+def reload() -> None:
+    """Drop the cached frame so the next read picks up a freshly-written prices.csv.
+
+    This only changes what real wall-clock data EXISTS on disk; it never changes the
+    leak-safety contract of get_prices(), which still filters strictly to `<= as_of`.
+    """
+    global _PRICES
+    _PRICES = None
+
+
+def latest_date() -> str:
+    """Last date actually present in prices.csv (real wall-clock data, not a sim_date)."""
+    idx = _load().index
+    return idx.max().strftime("%Y-%m-%d") if len(idx) else ""
+
+
+def first_date() -> str:
+    """First date actually present in prices.csv."""
+    idx = _load().index
+    return idx.min().strftime("%Y-%m-%d") if len(idx) else ""
+
+
+def coverage() -> dict:
+    """Summary of what's on disk right now: row/ticker counts and the date span."""
+    df = _load()
+    return {
+        "rows": len(df),
+        "tickers": int(df.shape[1]),
+        "first_date": first_date(),
+        "latest_date": latest_date(),
+    }

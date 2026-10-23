@@ -8,5 +8,23 @@
       "source": "yfinance",
       "as_of": "2022-01-03"
     }
-  ]
+  ],
+  "meta": {
+    "model": "gpt-6.1-sol",
+    "latency_ms": 5230,
+    "llm_calls": 1,
+    "guardrail": null,
+    "number_check": {
+      "numbers_checked": 2,
+      "rejected": [],
+      "retries": 0,
+      "fallback_used": false
+    },
+    "data_as_of": "2022-01-03",
+    "steps": [
+      {"name": "Guardrail filter", "kind": "code", "ms": 1, "result": "passed"},
+      {"name": "LLM answer", "kind": "llm", "ms": 5200, "result": "ok"},
+      {"name": "Number check", "kind": "code", "ms": 0, "result": "numbers match facts"}
+    ]
+  }
 }

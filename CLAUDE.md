@@ -35,7 +35,7 @@ Full original plan: `materials/Hackathon build plan Don't Double Down.pdf`. Judg
 cd backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && cd ..
 cd frontend && npm install && cd ..
 cp backend/.env.example backend/.env          # then fill the LLM vars (see Environment). NEVER commit .env
-.venv/bin/python backend/scripts/download_prices.py   # only if backend/data/prices.csv is missing (yfinance, ~1 min)
+backend/.venv/bin/python backend/scripts/download_prices.py   # only if backend/data/prices.csv is missing (yfinance, ~1 min)
 
 # every session (3 terminals, or background them)
 cd backend && USE_MOCKS=0 .venv/bin/gunicorn -w 1 --threads 8 --timeout 60 -b 0.0.0.0:5070 -b '[::]:5070' app:app   # real backend

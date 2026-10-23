@@ -14,12 +14,12 @@ from routes import ai_routes, portfolio_routes, timemachine_routes
 for module in (portfolio_routes, ai_routes, timemachine_routes):
     app.register_blueprint(module.bp)
 
-try:
-    from routes import proof_routes
-except ImportError:  # proof feature not present in this checkout
-    proof_routes = None
-if proof_routes:
-    app.register_blueprint(proof_routes.bp)
+for _name in ("proof_routes", "live_routes", "audit_routes"):
+    try:
+        _mod = __import__(f"routes.{_name}", fromlist=["bp"])
+    except ImportError:  # optional feature not present in this checkout
+        continue
+    app.register_blueprint(_mod.bp)
 
 
 _hits: dict[str, list[float]] = {}

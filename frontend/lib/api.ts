@@ -13,8 +13,15 @@ import {
   type Profile,
 } from "@/lib/schemas";
 import { ProofResSchema } from "@/lib/proof-schema";
+import {
+  DataSourcesResSchema,
+  LiveQuotesResSchema,
+  LiveRefreshResSchema,
+  LiveStatusResSchema,
+} from "@/lib/live-schema";
 
 export * from "@/lib/schemas";
+export * from "@/lib/live-schema";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 export const API_BASE = BASE;
@@ -172,4 +179,14 @@ export const api = {
       method: "POST", path: "/api/agent/step", body: { portfolio, sim_date }, schema: AgentStepResSchema,
       timeoutMs: ENGINE_TIMEOUT_MS, demoFile: "agent_step", signal,
     }),
+  // Live market data (Go live / Back to 2022). No demoFile on liveRefresh: there's nothing to "refresh"
+  // offline, and a 429/502 is handled by the caller (lib/live.ts) rather than falling back here.
+  liveStatus: (signal?: AbortSignal) =>
+    call({ path: "/api/live/status", schema: LiveStatusResSchema, timeoutMs: ENGINE_TIMEOUT_MS, demoFile: "live_status", signal }),
+  liveQuotes: (signal?: AbortSignal) =>
+    call({ path: "/api/live/quotes", schema: LiveQuotesResSchema, timeoutMs: ENGINE_TIMEOUT_MS, demoFile: "live_quotes", signal }),
+  liveRefresh: (signal?: AbortSignal) =>
+    call({ method: "POST", path: "/api/live/refresh", schema: LiveRefreshResSchema, timeoutMs: ENGINE_TIMEOUT_MS, signal }),
+  dataSources: (signal?: AbortSignal) =>
+    call({ path: "/api/data/sources", schema: DataSourcesResSchema, timeoutMs: ENGINE_TIMEOUT_MS, demoFile: "data_sources", signal }),
 };

@@ -6,7 +6,7 @@ import { ErrorNotice, Working } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { INITIAL_CLOCK, SIM_START, useAppState } from "@/lib/app-state";
+import { INITIAL_CLOCK, useAppState } from "@/lib/app-state";
 import type { Profile, Risk } from "@/lib/api";
 import { usd } from "@/lib/display";
 import { PERSONAS, personaById, type PersonaId } from "@/lib/personas";
@@ -169,7 +169,7 @@ function ReviewCard({
 }
 
 export function ProfileView() {
-  const { persona, setPersona, parsed, setParsed, setProfile, setPlan, setClock } = useAppState();
+  const { persona, setPersona, parsed, setParsed, setProfile, setPlan, clock, setClock } = useAppState();
   const [custom, setCustom] = useState<{ persona: PersonaId; text: string } | null>(null);
   const [edits, setEdits] = useState<Profile | null>(null);
   const parse = useParseProfile();
@@ -196,13 +196,17 @@ export function ProfileView() {
 
   function buildPlan() {
     if (!draft) return;
+    // Uses clock.date, not a hardcoded SIM_START: when live mode has moved the sim clock to today's
+    // market, the plan is built on today's data too. Not live yet → clock.date is already SIM_START.
     build.mutate(
-      { profile: draft, simDate: SIM_START },
+      { profile: draft, simDate: clock.date },
       {
         onSuccess: (res) => {
           setProfile(draft);
           setPlan(res);
-          setClock(INITIAL_CLOCK);
+          // Reset the replay cursor/progress but keep whatever date is current (2022 start, or the
+          // live date), so going live then building a plan doesn't silently drop back to 2022.
+          setClock({ ...INITIAL_CLOCK, date: clock.date });
           goToView("portfolio");
         },
       },

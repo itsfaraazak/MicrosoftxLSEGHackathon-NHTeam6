@@ -7,6 +7,7 @@ only when followed by a unit (percent, dollars, years, months, ...), so "one rea
 import re
 import unicodedata
 
+from ai import rigor
 from models import Fact
 
 YEAR = re.compile(r"(?<![\d$£€,.])(?:19|20)\d{2}(?![\d,]|\.\d)")
@@ -76,14 +77,18 @@ def check(text: str, facts: list[Fact], *, sim_year: int | None = None,
     def ok(n: float) -> bool:
         return round(n, 1) in allowed or round(n, 0) in allowed
 
+    checked = 0
     for m in WORDNUM.finditer(text):
+        checked += 1
         if not ok(_words_to_num(m.group(1))):
             bad.append(m.group(1).strip())
     body = NAMES.sub(" ", DATE_FORMS.sub(" ", text))
     for whole, frac, suffix in NUM.findall(body):
+        checked += 1
         n = float(whole.replace(",", "") + frac)
         if suffix:
             n *= SCALE[suffix.lower()]
         if not ok(n):
             bad.append(whole + frac + (suffix or ""))
+    rigor.note_number_check(checked, bad)
     return bad

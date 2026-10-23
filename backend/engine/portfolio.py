@@ -29,6 +29,53 @@ def safe_bucket_amount(profile: Profile, total_assets: float) -> float:
     return min(safe, total_assets)
 
 
+EMERGENCY_FUND_MONTHS_MIN = 3.0
+EMPLOYER_CONCENTRATION_PCT = 0.10
+ETF_CAP_PCT = 0.25
+
+
+def advisory_flags(profile: Profile, positions: list[Position], total_assets: float) -> list[str]:
+    """Flags that the PDF asks for but that don't change the fixed $100k investable pot in this
+    demo -- they are advice surfaced alongside the portfolio, not a reallocation. (Rule 1 covers
+    the <5y safe bucket already handled in build(); this covers the <3mo emergency-fund check,
+    high-interest debt, employer-concentration caps and the UK/USD currency note.)"""
+    flags: list[str] = []
+
+    if profile.emergency_fund_months < EMERGENCY_FUND_MONTHS_MIN:
+        flags.append(
+            f"Emergency fund covers only {profile.emergency_fund_months:g} months of expenses "
+            f"(below the {EMERGENCY_FUND_MONTHS_MIN:g}-month minimum) -- consider building this "
+            "before investing further."
+        )
+
+    if profile.high_interest_debt:
+        flags.append(
+            "You reported high-interest debt. Its interest rate likely exceeds expected "
+            "investment returns, so paying it off first is usually the better move."
+        )
+
+    for h in profile.holdings:
+        if h.is_employer_stock and total_assets > 0 and h.amount_usd / total_assets > EMPLOYER_CONCENTRATION_PCT:
+            pct = h.amount_usd / total_assets * 100
+            flags.append(
+                f"{h.ticker} employer shares are {pct:.0f}% of your investable assets, above the "
+                f"{EMPLOYER_CONCENTRATION_PCT * 100:g}% concentration guideline -- consider diversifying."
+            )
+
+    for p in positions:
+        if p.bucket == "growth" and total_assets > 0 and p.amount_usd / total_assets > ETF_CAP_PCT + 1e-6:
+            pct = p.amount_usd / total_assets * 100
+            flags.append(f"{p.ticker} is {pct:.0f}% of assets, above the {ETF_CAP_PCT * 100:g}% single-ETF cap.")
+
+    if profile.location.strip().lower() in {"london", "manchester", "aberdeen", "uk", "united kingdom"}:
+        flags.append(
+            "All holdings are USD-denominated ETFs; as a UK-based client you carry GBP/USD "
+            "currency risk on top of market risk."
+        )
+
+    return flags
+
+
 # ---------------------------------------------------------------------------
 # Rule 3: risk mix in growth bucket
 # ---------------------------------------------------------------------------
@@ -123,12 +170,34 @@ def allocate_stocks(
 
 
 # ---------------------------------------------------------------------------
-# Rule 5: caps (pure, currently a pass-through so the demo total stays 100k)
+# Rule 5: caps -- no single ETF above 25% of total assets. Overflow is redistributed
+# proportionally across the other growth positions that still have headroom, so the total
+# stays exactly intact (safe-bucket positions are never capped: that money is earmarked for a
+# near-term goal and must not be pushed into growth ETFs).
 # ---------------------------------------------------------------------------
 def apply_caps(positions: list[Position], total_assets: float) -> list[Position]:
-    """Rule 5: no ETF > 25%. For the demo we keep the total intact; this hook
-    is where redistribution would go."""
-    return positions
+    cap = ETF_CAP_PCT * total_assets
+    pos = list(positions)
+    for _ in range(4):  # a few passes are enough to settle for our small position counts
+        overflow = 0.0
+        next_pos: list[Position] = []
+        for p in pos:
+            if p.bucket == "growth" and p.amount_usd > cap:
+                overflow += p.amount_usd - cap
+                next_pos.append(p.model_copy(update={"amount_usd": cap}))
+            else:
+                next_pos.append(p)
+        pos = next_pos
+        if overflow <= 1e-6:
+            break
+        room = [(i, cap - p.amount_usd) for i, p in enumerate(pos)
+                if p.bucket == "growth" and p.amount_usd < cap]
+        total_room = sum(r for _, r in room)
+        if total_room <= 1e-6:
+            break
+        for i, r in room:
+            pos[i] = pos[i].model_copy(update={"amount_usd": pos[i].amount_usd + overflow * (r / total_room)})
+    return pos
 
 
 # ---------------------------------------------------------------------------
@@ -216,17 +285,19 @@ def build(
         safe_bucket_usd=safe_usd,
         growth_bucket_usd=growth_usd,
         overlap_score=compute_overlap_score(positions, exposure),
+        flags=advisory_flags(profile, positions, total_assets),
     )
     return portfolio, facts
 
 
-# Extra fields that the route can merge into the JSON response without touching models.py
+# Extra fields that the route can merge into the JSON response.
 def extra_fields(portfolio: Portfolio, exposure: ExposureMap) -> dict:
     return {
         "baseline_overlap_score": baseline_overlap(exposure),
         "positions": [
             {"reason": _readable_reason(p, exposure)} for p in portfolio.positions
         ],
+        "flags": portfolio.flags,
     }
 
 

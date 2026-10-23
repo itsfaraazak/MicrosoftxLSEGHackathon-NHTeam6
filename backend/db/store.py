@@ -31,3 +31,33 @@ def log(kind: str, payload: dict) -> dict:
         with LOCAL.open("a") as f:
             f.write(json.dumps(doc) + "\n")
     return doc
+
+
+def recent(limit: int = 50, kinds: list[str] | str | None = None) -> list[dict]:
+    """Most-recent-first audit events, optionally filtered to `kinds`. Reads Cosmos if configured, else the
+    local JSONL. Safe if the store is empty/missing/corrupt - returns [] rather than raising, since this
+    backs a read-only diagnostics endpoint that must never 500."""
+    if isinstance(kinds, str):
+        kinds = [kinds]
+    try:
+        c = _cosmos()
+        if c:
+            docs = list(c.query_items(query="SELECT * FROM c", enable_cross_partition_query=True))
+        else:
+            if not LOCAL.exists():
+                return []
+            docs = []
+            for line in LOCAL.read_text().splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    docs.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+        if kinds:
+            docs = [d for d in docs if d.get("kind") in kinds]
+        docs.sort(key=lambda d: d.get("ts", 0), reverse=True)
+        return docs[:limit]
+    except Exception:  # noqa: BLE001 - a diagnostics read must never break the app
+        return []

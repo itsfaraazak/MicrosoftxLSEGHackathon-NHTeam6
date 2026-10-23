@@ -82,7 +82,10 @@
           "reason": "Bonds cushion the growth bucket against a downturn"
         }
       ],
-      "baseline_overlap_score": 0.52
+      "baseline_overlap_score": 0.52,
+      "flags": [
+        "All holdings are USD-denominated ETFs; as a UK-based client you carry GBP/USD currency risk on top of market risk."
+      ]
     },
     {
       "sim_date": "2022-01-03",
@@ -166,7 +169,10 @@
           "reason": "Bonds cushion the growth bucket against a downturn"
         }
       ],
-      "baseline_overlap_score": 0.52
+      "baseline_overlap_score": 0.52,
+      "flags": [
+        "All holdings are USD-denominated ETFs; as a UK-based client you carry GBP/USD currency risk on top of market risk."
+      ]
     },
     {
       "sim_date": "2022-01-03",
@@ -250,7 +256,10 @@
           "reason": "Bonds cushion the growth bucket against a downturn"
         }
       ],
-      "baseline_overlap_score": 0.52
+      "baseline_overlap_score": 0.52,
+      "flags": [
+        "All holdings are USD-denominated ETFs; as a UK-based client you carry GBP/USD currency risk on top of market risk."
+      ]
     }
   ]
 }

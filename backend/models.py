@@ -63,6 +63,7 @@ class Portfolio(BaseModel):
     growth_bucket_usd: float
     overlap_score: float
     baseline_overlap_score: float | None = None
+    flags: list[str] = Field(default_factory=list)
 
 
 class GuardEvent(BaseModel):

@@ -1,7 +1,7 @@
 """OWNER B (AI Layer): /api/profile/parse, /api/ask. Also app-wide LLM deadline + error mapping (504/502)."""
 from flask import Blueprint, g, jsonify, request
 
-from ai import llm
+from ai import llm, rigor
 from routes._mock import mock, use_mocks
 
 bp = Blueprint("ai", __name__)
@@ -38,7 +38,10 @@ def profile_parse():
         return mock("profile_parse")
     from ai.functions import parse_profile
     try:
-        return jsonify(parse_profile(request.json["text"]))
+        with rigor.collect():
+            result = parse_profile(request.json["text"])
+            meta = rigor.meta()
+        return jsonify({**result, "meta": meta})
     except ValueError as e:
         return jsonify({"error": str(e)}), 422
 
@@ -49,4 +52,7 @@ def ask():
         return mock("ask")
     from ai.functions import answer
     body = request.json
-    return jsonify(answer(body["question"], body["profile"], body["sim_date"]))
+    with rigor.collect():
+        result = answer(body["question"], body["profile"], body["sim_date"])
+        meta = rigor.meta()
+    return jsonify({**result, "meta": meta})

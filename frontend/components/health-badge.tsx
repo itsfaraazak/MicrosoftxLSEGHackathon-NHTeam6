@@ -11,7 +11,9 @@ const LOOK: Record<HealthStatus, { label: string; dot: string; box: string; titl
     title: "Contacting the backend",
   },
   live: {
-    label: "Live data",
+    // "Backend connected" avoids confusion with the live-market "Go live" feature: this pill only
+    // means the Flask backend is reachable, not that market data is live.
+    label: "Backend connected",
     dot: "bg-plan",
     box: "glass text-foreground",
     title: "Connected to the live backend",

@@ -4,7 +4,7 @@ Tests monkeypatch `chat`; nothing else in the app talks to the model.
 Env (generic names win, Azure names are the fallback):
   LLM_BASE_URL / AZURE_OPENAI_ENDPOINT (+ '/openai/v1/')   LLM_API_KEY / AZURE_OPENAI_API_KEY
   LLM_MODEL / AZURE_OPENAI_DEPLOYMENT                      LLM_AUTH_HEADER (optional, e.g. 'api-key'; default Bearer)
-  LLM_API_VERSION (set => Azure deployments route + api-key header)  LLM_MAX_TOKENS  LLM_SEND_TEMPERATURE=1
+  LLM_FAST_MODEL (used for json_mode extraction calls)  LLM_API_VERSION (set => Azure deployments route + api-key header)  LLM_MAX_TOKENS  LLM_SEND_TEMPERATURE=1
   LLM_TIMEOUT_S (per call, default 12)                     LLM_DEADLINE_S (per request, default 18)
 
 Time limits: every `chat` call is capped by LLM_TIMEOUT_S and by whatever is left of the request deadline, with
@@ -90,6 +90,11 @@ def configured() -> bool:
     return all(_settings())
 
 
+def model_name() -> str:
+    """Public accessor for the configured model/deployment name, for rigor/audit metadata."""
+    return _settings()[2]
+
+
 def _complete(messages: list[dict], model: str, temperature: float, json_mode: bool, timeout: float) -> str:
     """LLM_API_VERSION set -> Azure style route {base}/openai/deployments/{model} with `api-key` header
     (what the hackathon portal exposes). Otherwise plain OpenAI-compatible base URL."""
@@ -125,6 +130,8 @@ def chat(sim_date: str, user: str, *, json_mode: bool = False, temperature: floa
         raise LLMTimeout("LLM deadline exceeded")
     timeout = timeout_s() if left is None else min(timeout_s(), left)
     _, _, model = _settings()
+    if json_mode and os.getenv("LLM_FAST_MODEL"):
+        model = os.environ["LLM_FAST_MODEL"]  # structured extraction: fastest model, no reasoning tokens
     messages = [{"role": "system", "content": SYSTEM.format(sim_date=sim_date)},
                 {"role": "user", "content": user}]
     box: dict = {}

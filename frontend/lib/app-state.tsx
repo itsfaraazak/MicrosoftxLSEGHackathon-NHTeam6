@@ -20,6 +20,10 @@ export type SimClock = {
 
 export const INITIAL_CLOCK: SimClock = { date: SIM_START, cursor: 0, progress: 0, reached: 0 };
 
+// Live market mode (Go live / Back to 2022). Not persisted: a reload goes back to the 2022 time machine.
+export type LiveState = { active: boolean; latestDate: string | null };
+export const INITIAL_LIVE: LiveState = { active: false, latestDate: null };
+
 type AppState = {
   persona: PersonaId;
   setPersona: (id: PersonaId) => void;
@@ -31,6 +35,11 @@ type AppState = {
   setPlan: (r: PortfolioRes | null) => void;
   clock: SimClock;
   setClock: (c: SimClock) => void;
+  live: LiveState;
+  // Sets the sim clock to the latest live date so profile/portfolio/ask/proof use today's market.
+  enterLive: (latestDate: string) => void;
+  // Leaves live mode and restores the 2022 time machine's start date.
+  backTo2022: () => void;
   resetDemo: () => void;
   clearAllCaches: () => void;
 };
@@ -64,6 +73,20 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const parsed = useStoredJson("parsed", parseParsed);
   const plan = useStoredJson("plan", parsePlan);
   const [clock, setClock] = useState<SimClock>(INITIAL_CLOCK);
+  const [live, setLive] = useState<LiveState>(INITIAL_LIVE);
+
+  const enterLive = useCallback(
+    (latestDate: string) => {
+      setLive({ active: true, latestDate });
+      setClock({ ...clock, date: latestDate });
+    },
+    [clock],
+  );
+
+  const backTo2022 = useCallback(() => {
+    setLive(INITIAL_LIVE);
+    setClock(INITIAL_CLOCK);
+  }, []);
 
   // Reset demo: current session only. The demo-prep cache stays so Compare is instant after a reset.
   const resetDemo = useCallback(() => {
@@ -71,12 +94,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== "demo-prep" && q.queryKey[0] !== "health" });
     queryClient.getMutationCache().clear();
     setClock(INITIAL_CLOCK);
+    setLive(INITIAL_LIVE);
   }, [queryClient]);
 
   const clearAllCaches = useCallback(() => {
     clearSession();
     queryClient.clear();
     setClock(INITIAL_CLOCK);
+    setLive(INITIAL_LIVE);
   }, [queryClient]);
 
   const value = useMemo<AppState>(
@@ -91,10 +116,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setPlan: store("plan"),
       clock,
       setClock,
+      live,
+      enterLive,
+      backTo2022,
       resetDemo,
       clearAllCaches,
     }),
-    [persona, parsed, profile, plan, clock, resetDemo, clearAllCaches],
+    [persona, parsed, profile, plan, clock, live, enterLive, backTo2022, resetDemo, clearAllCaches],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -81,7 +81,10 @@
         "reason": "Bonds cushion the growth bucket against a downturn"
       }
     ],
-    "baseline_overlap_score": 0.52
+    "baseline_overlap_score": 0.52,
+    "flags": [
+      "All holdings are USD-denominated ETFs; as a UK-based client you carry GBP/USD currency risk on top of market risk."
+    ]
   },
   "explanation": "Your $30,000 house deposit sits in short-term Treasuries (SHY) because you need it in 5 years. The rest avoids tech: 31% of a broad US fund is tech, so we hold less of it.",
   "facts": [

@@ -2,17 +2,30 @@
 The LLM interprets text and explains facts. Code decides. Every LLM output is number-checked."""
 import json
 import re
+import time
 
 from pydantic import ValidationError
 
-from ai import guardrails, llm
+from ai import guardrails, llm, rigor
 from ai.exposure_fallback import fallback_exposure
+from ai.guardrails import REFUSE_DISTRESS, REFUSE_FUTURE, REFUSE_INJECTION
 from ai.number_check import check
 from db import store
 from models import ExposureMap, Fact, GuardEvent, Portfolio, Profile
 
 SIM_START = "2022-01-03"
 RETRIES = 2
+
+
+def _guardrail_label(refusal: str) -> str | None:
+    """Classify a pre_filter refusal string for audit/rigor reporting, without changing pre_filter's API."""
+    if refusal.startswith(REFUSE_FUTURE[:20]):
+        return "future_question"
+    if refusal == REFUSE_INJECTION:
+        return "prompt_injection"
+    if refusal == REFUSE_DISTRESS:
+        return "distress"
+    return "other"
 
 
 def _json(text: str) -> dict:
@@ -24,7 +37,7 @@ def _contradictions(p: Profile) -> list[str]:
     """Code-side check so the flag never depends on the model noticing."""
     out = list(p.contradictions)
     sold = re.search(r"\b(sold|panic|dumped|cashed out)\b", p.past_behaviour, re.IGNORECASE)
-    if p.risk_tolerance == "high" and sold and not any("sold" in c.lower() or "behaviour" in c.lower() for c in out):
+    if p.risk_tolerance == "high" and sold and not any(re.search(r"sold|sell|panic|behaviour|20(20|08)", c, re.IGNORECASE) for c in out):
         out.append(f"Stated high risk tolerance but past behaviour: {p.past_behaviour}")
     return out
 
@@ -38,16 +51,26 @@ def parse_profile(text: str) -> dict:
               "risk tolerance and past behaviour.")
     prompt = f"Extract a Profile JSON with fields: {schema}\n\n{guardrails.fence(text)}"
     error = ""
-    for _ in range(RETRIES + 1):
+    rigor.set_data_as_of(SIM_START)
+    for attempt in range(RETRIES + 1):
+        t0 = time.monotonic()
         try:
-            data = _json(llm.chat(SIM_START, prompt + error, json_mode=True))
+            raw = llm.chat(SIM_START, prompt + error, json_mode=True)
+            rigor.note_llm_call()
+            rigor.set_model(llm.model_name())
+            ms = int((time.monotonic() - t0) * 1000)
+            data = _json(raw)
             profile = Profile(**data)
             if not (profile.job_title.strip() or profile.industry.strip()) or profile.age <= 0:
                 raise ValueError("no usable profile in text")
             profile.contradictions = _contradictions(profile)
+            rigor.step("LLM parse", "llm", ms, f"parsed profile ({attempt} retr{'y' if attempt == 1 else 'ies'})" if attempt else "parsed profile")
             store.log("profile", profile.model_dump(mode="json"))
             return {"profile": profile.model_dump(mode="json"), "contradictions": profile.contradictions}
         except (json.JSONDecodeError, ValidationError, TypeError, ValueError) as e:
+            ms = int((time.monotonic() - t0) * 1000)
+            rigor.step("LLM parse", "llm", ms, f"invalid output, retrying ({str(e)[:80]})")
+            rigor.note_retry()
             error = f"\n\nYour previous output was invalid ({str(e)[:200]}). Return valid JSON only."
     raise ValueError("Could not parse a valid profile from the text")
 
@@ -88,13 +111,24 @@ def _template_explanation(portfolio: Portfolio, facts: list[Fact]) -> str:
 
 def _checked(prompt: str, facts: list[Fact], sim_date: str, fallback: str, extra_allow: set[float] | None = None) -> str:
     year = int(sim_date[:4])
-    for _ in range(RETRIES + 1):
+    rigor.set_data_as_of(sim_date)
+    for attempt in range(RETRIES + 1):
+        t0 = time.monotonic()
         text = llm.chat(sim_date, prompt)
+        rigor.note_llm_call()
+        rigor.set_model(llm.model_name())
+        ms = int((time.monotonic() - t0) * 1000)
+        rigor.step("LLM answer", "llm", ms, "ok" if attempt == 0 else f"ok (retry {attempt})")
         bad = check(text, facts, sim_year=year, allow=extra_allow)
         if not bad:
+            rigor.step("Number check", "code", 0, "numbers match facts")
             return text
+        rigor.step("Number check", "code", 0, f"rejected {bad}, regenerating")
         prompt += f"\n\nYour previous answer used numbers not in the facts ({bad}). Rewrite using only the facts."
         store.log("number_check_reject", {"bad": bad, "sim_date": sim_date})
+        rigor.note_retry()
+    rigor.note_fallback_used()
+    rigor.step("Number check", "code", 0, "fell back to deterministic template")
     return fallback
 
 
@@ -118,10 +152,17 @@ def _default_facts(sim_date: str) -> list[Fact]:
 
 
 def answer(question: str, profile: dict | Profile | None, sim_date: str, facts: list[Fact] | None = None) -> dict:
+    rigor.set_data_as_of(sim_date)
+    t0 = time.monotonic()
     refusal = guardrails.pre_filter(question, sim_date)
+    ms = int((time.monotonic() - t0) * 1000)
     if refusal:
-        store.log("ask_refused", {"question": question, "sim_date": sim_date})
+        label = _guardrail_label(refusal)
+        rigor.set_guardrail(label)
+        rigor.step("Guardrail filter", "code", ms, f"refused: {label}")
+        store.log("ask_refused", {"question": question, "sim_date": sim_date, "guardrail": label})
         return {"answer": refusal, "facts_used": []}
+    rigor.step("Guardrail filter", "code", ms, "passed")
     if profile is None:
         profile = Profile(name="Client", age=30, job_title="", industry="", risk_tolerance="medium")
     elif not isinstance(profile, Profile):
@@ -139,7 +180,10 @@ def answer(question: str, profile: dict | Profile | None, sim_date: str, facts: 
               f"Client: {profile.job_title} in {profile.industry}.\nFacts:\n{_facts_prompt(facts)}\n"
               f"Question: {guardrails.fence(question)}")
     text = _checked(prompt, facts, sim_date, "I don't have enough information in today's data to answer that.")
-    store.log("ask", {"question": question, "answer": text, "sim_date": sim_date})
+    rig = rigor.meta()
+    nc = (rig or {}).get("number_check", {})
+    store.log("ask", {"question": question, "answer": text, "sim_date": sim_date,
+                       "numbers_checked": nc.get("numbers_checked", 0), "rejected": nc.get("rejected", [])})
     return {"answer": text, "facts_used": [f.model_dump(mode="json") for f in facts]}
 
 

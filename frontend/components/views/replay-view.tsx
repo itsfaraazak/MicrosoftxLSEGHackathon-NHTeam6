@@ -34,7 +34,7 @@ function Calm({ title, children }: { title: string; children: React.ReactNode })
 }
 
 export function ReplayView() {
-  const { profile, plan, clock, setClock } = useAppState();
+  const { profile, plan, clock, setClock, live, backTo2022 } = useAppState();
   const isActiveView = useSearchParams().get("view") === "replay";
   const [playing, setPlaying] = useState(false);
 
@@ -109,7 +109,19 @@ export function ReplayView() {
   const techAhead = !!now && now.date.startsWith("2023") && now.tech_heavy > now.ours;
 
   let body: React.ReactNode;
-  if (!profile || !plan) {
+  if (live.active) {
+    body = (
+      <div className="tile flex flex-col items-start gap-3 rounded-2xl p-6">
+        <p>
+          The time machine replays 2022–2023 against your plan, so it’s paused while you’re viewing live market
+          data{live.latestDate ? ` (up to ${longDate(live.latestDate)})` : ""}.
+        </p>
+        <Button className="h-10 px-4 font-semibold" onClick={backTo2022}>
+          Back to {longDate(SIM_START)}
+        </Button>
+      </div>
+    );
+  } else if (!profile || !plan) {
     body = (
       <div className="tile flex flex-col items-start gap-3 rounded-2xl p-6">
         <p>Build your plan first, then replay how it would have held up.</p>
