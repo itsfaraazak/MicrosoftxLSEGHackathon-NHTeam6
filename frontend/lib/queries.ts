@@ -39,8 +39,9 @@ export function useHealth(): { status: HealthStatus; refetch: () => void } {
     retry: false,
   });
   let status: HealthStatus = "checking";
-  if (q.data) status = q.data.mocks ? "mock" : "live";
-  else if (q.isError) status = DEMO_FALLBACK || offlineDemo ? "offline-demo" : "offline";
+  if (offlineDemo) status = "offline-demo";
+  else if (q.data) status = q.data.mocks ? "mock" : "live";
+  else if (q.isError) status = DEMO_FALLBACK ? "offline-demo" : "offline";
   return { status, refetch: () => void q.refetch() };
 }
 
