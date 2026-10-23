@@ -17,7 +17,8 @@ Full original plan: `materials/Hackathon build plan Don't Double Down.pdf`. Judg
 5. **No secrets in git.** Keys live in `backend/.env` / `frontend/.env.local` (gitignored). Never paste keys, credential
    sheets or screenshots of them into code, docs, commits or chat with Claude. Never read `.env` files.
 6. **Audit everything.** Inputs, outputs, trades go through `backend/db/store.log()`.
-7. Feature freeze 14:45. If behind: drop Autopilot at 13:30, drop Ask at 14:30. Core story must survive.
+7. Core story must always survive: profile -> portfolio that avoids your job's risk -> 2022 replay -> proof. If time is short, cut features, never the demo path.
+8. LLM endpoints answer within ~20 s or return `{"error","fallback":true}` (504/502), never hang. Keep field names/types exactly as in `backend/mocks/*.json`.
 
 ## Stack (versions verified 2026-10-23 from npm/PyPI — re-check before bumping)
 - Frontend `frontend/`: Next.js 16.4.2, React 19.3, Tailwind CSS 4.3, shadcn/ui CLI 4.22 (Button, Card, Badge, Tabs,
@@ -26,19 +27,63 @@ Full original plan: `materials/Hackathon build plan Don't Double Down.pdf`. Judg
   and `frontend/AGENTS.md` before writing Next code.
 - Backend `backend/`: Python 3.14, Flask 3.1.3, flask-cors, pydantic 2.14, pandas 3.1, yfinance 1.7, fredapi,
   openai 3.37 (Azure v1 endpoint), azure-cosmos 4.17, azure-identity, azure-monitor-opentelemetry, pytest, ruff.
-- Azure: AI Foundry / Azure OpenAI (LLM), Cosmos DB for NoSQL (audit log, profiles), Application Insights.
-  Details: `docs/context/AZURE.md`.
+- LLM: the organisers' OpenAI-compatible portal (Azure-hosted models). Cosmos DB/App Insights are optional and only claimed if wired. Free-tier notes: `docs/context/AZURE.md`.
 
-## Commands
-- Backend: `cd backend && source .venv/bin/activate && flask --app app run --port 5000` (or `python app.py`). `USE_MOCKS=1` serves `backend/mocks/*.json`.
-- Frontend: `cd frontend && npm run dev` (port 3000). Set `NEXT_PUBLIC_API_URL` in `.env.local`.
-- Tests: `cd backend && python -m pytest -q`. Lint: `ruff check .` / `npm run lint`. Types: `npx tsc --noEmit`.
+## Quick start (copy-paste; from repo root)
+```bash
+# one-time
+cd backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && cd ..
+cd frontend && npm install && cd ..
+cp backend/.env.example backend/.env          # then fill the LLM vars (see Environment). NEVER commit .env
+.venv/bin/python backend/scripts/download_prices.py   # only if backend/data/prices.csv is missing (yfinance, ~1 min)
 
-## Ownership (3 full-feature slices; details and interfaces in `docs/BACKEND-PLAN.md`; start with `/start-slice A|B|C`)
-- A Portfolio Engine: `backend/engine/{data_clock,exposure,portfolio}.py`, `backend/data/**`, `routes/portfolio_routes.py`, `frontend/app/portfolio/**`
-- B AI Layer + pitch: `backend/ai/**`, `routes/ai_routes.py`, `frontend/app/page.tsx`, Ask panel, slides, Q&A
-- C Time Machine: `backend/engine/{guard,agent}.py`, `backend/db/**`, `routes/timemachine_routes.py`, `frontend/app/replay/**`
-- Shared contract (change only with all three agreeing, log in `docs/decisions.md`): `backend/models.py`, `docs/api-contract.md`, `backend/mocks/**`
+# every session (3 terminals, or background them)
+cd backend && USE_MOCKS=0 .venv/bin/gunicorn -w 1 --threads 8 --timeout 60 -b 0.0.0.0:5070 -b '[::]:5070' app:app   # real backend
+cd frontend && NEXT_PUBLIC_API_URL=http://localhost:5070 npm run dev -- -p 3000                                    # http://localhost:3000
+cd backend && .venv/bin/python scripts/prewarm.py                                                                    # warm persona caches so demo clicks are instant
+```
+Mock-only mode (no LLM/keys needed): `cd backend && USE_MOCKS=1 .venv/bin/python app.py` (set `FLASK_PORT=5070`). Frontend can also run fully offline: `NEXT_PUBLIC_DEMO_FALLBACK=1` + `npm run sync-mocks`.
+Smoke tests: `cd backend && .venv/bin/python scripts/ai_smoke.py` (live model: parse, exposure, ask, leak, injection) · `curl localhost:5070/api/health` -> `{"mocks":false,"ok":true}`.
+
+## Checks (run before every commit)
+`cd backend && .venv/bin/python -m pytest -q && .venv/bin/ruff check .` · `cd frontend && npx tsc --noEmit && npm run lint && npm run build`
+
+## Ports and gotchas (all learned the hard way on 2026-10-23)
+- **Backend = port 5070.** Not 5000 (macOS AirPlay Receiver owns it). **Never 5060/5061**: Chrome blocks them (`ERR_UNSAFE_PORT`) so the browser says "Failed to fetch"/"Backend offline" while curl works fine.
+- CORS allows `localhost`/`127.0.0.1` on 3000, 3001, 3055 only (`backend/app.py`). Add a port there if you use another.
+- gunicorn has **no hot reload**: restart it after any backend/.env change (`pkill -f 'gunicorn.*5070'`, then start again). Use `-w 1 --threads 8` so the in-memory portfolio cache is shared (2 workers = two separate caches).
+- `NEXT_PUBLIC_*` vars are baked at build/dev start: restart `npm run dev` after changing `NEXT_PUBLIC_API_URL`.
+- Tests that monkeypatch `ai.llm.chat` never hit the network; `scripts/ai_smoke.py` does.
+- `backend/data/*.csv` and `.env` are gitignored: each teammate regenerates data with `scripts/download_*.py` and gets keys from the portal.
+- The repo is PUBLIC on GitHub. Nothing secret in any commit, doc, screenshot or prompt.
+
+## Environment (names only; values live in `backend/.env`, gitignored)
+`USE_MOCKS` (1 = serve `backend/mocks/*.json`, 0 = compute) · `FLASK_PORT` · `RATE_LIMIT_PER_MIN` (60 on LLM routes)
+LLM (hackathon portal, Azure-style route `/openai/deployments/{model}` + `api-key` header): `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_API_VERSION` (e.g. 2024-10-21), `LLM_MODEL`, `LLM_FAST_MODEL` (JSON extraction calls), `LLM_TIMEOUT_S` (12), `LLM_DEADLINE_S` (18), `LLM_MAX_TOKENS`.
+Models on the portal: `gpt-5.6-terra` (fastest, best for us: ~2-4 s, no reasoning tokens), `gpt-6-luna`, `gpt-6.1-sol` (slow, 5-12 s), `gpt-6-astra`, `MAI-Thinking-1` (blocked by the portal's content filter). Reasoning models need `max_completion_tokens` and reject custom `temperature`: already handled in `backend/ai/llm.py`.
+Key tip: copy the API key from the portal (Account -> API Details). Do not retype it from photos: capital `I` and lowercase `l` look identical.
+Optional: `COSMOS_ENDPOINT`/`COSMOS_KEY` (audit log; falls back to `backend/data/local_store.jsonl`), `FRED_API_KEY` (not needed: FRED public CSV is used).
+
+## Deploy for judges' phones (details: `docs/DEPLOY.md`)
+Frontend on Vercel (stable URL, `frontend/vercel.json` proxies `/api/*` to the laptop), backend on this laptop through an ngrok tunnel to port 5070 (stable domain; `ngrok http 5070`). Phones see one origin. Redeploy: `frontend/scripts/deploy.sh`. Keep the laptop awake (`caffeinate -dimsu`), prewarm before the demo, kill the tunnel (`pkill ngrok`) after judging. Offline demo fallback (`NEXT_PUBLIC_DEMO_FALLBACK=1`) keeps the app usable if the tunnel drops.
+
+## What is built (all verified; spec/gap table in `docs/SPEC.md`)
+- **Endpoints** (shapes in `docs/api-contract.md`, mocks in `backend/mocks/`): `POST /api/profile/parse`, `/api/portfolio`, `/api/compare`, `/api/ask`, `/api/proof`, `/api/agent/step`; `GET /api/replay`, `/api/proof/script`, `/api/audit`, `/api/rigor/summary`, `/api/health`; live market: `/api/live/status|quotes|refresh`, `/api/data/sources` (when `routes/live_routes.py` exists).
+- **AI layer** (`backend/ai/`): `guardrails.py` (look-ahead/injection/distress refused in code before the LLM), `number_check.py` (every number must match a Fact), `functions.py` (parse_profile, map_exposure, explain, answer, coach), `llm.py` (portal client, timeouts, fast model), `rigor.py` (collects per-request trace -> `meta` on responses).
+- **Engine** (`backend/engine/`): `data_clock` (only door to prices), `exposure` (job -> sector overlap), `portfolio` (allocation rules 1-6 + advisory flags), `guard` (drawdown events, replay), `agent` (Autopilot: whitelist, caps, kill switch, approval), `personas` (Priya/Tom/Fiona).
+- **Quant proof** (`backend/quant/`): backtest + verdicts decided by code, ships the real source of each function, a sha256 and a reproducible script. Honest "not supported" verdicts are shown.
+- **Frontend** (`frontend/`): single-page orbit app (Bipin) with profile, portfolio, compare, time machine, Ask, Proof views; guided tour, rigor drawer, swipe gestures, live-data button (where merged).
+- **Tests:** ~280 backend tests incl. ~195 red-team cases. Data clock leak test, number-check tests, 2022 results must not change when data is extended.
+
+## Branches
+`main` (shared), `faraaz` (Faraaz: AI layer + integration), `backend-prince` (Prince: portfolio engine, merged to main), `bipin-frontend` (Bipin: frontend; never edit it from other branches, merge it INTO yours: `git fetch && git merge origin/bipin-frontend`). Commit with the Co-Authored-By line; never force-push; never push secrets.
+
+## Ownership (slices from `docs/BACKEND-PLAN.md`; start a session with `/start-slice A|B|C`)
+- A Portfolio Engine (Prince): `backend/engine/{data_clock,exposure,portfolio}.py`, `backend/data/**`, `routes/portfolio_routes.py`
+- B AI Layer + pitch (Faraaz): `backend/ai/**`, `routes/{ai,audit}_routes.py`, `docs/pitch/**`
+- C Time Machine: `backend/engine/{guard,agent}.py`, `backend/db/**`, `routes/timemachine_routes.py`
+- Frontend (Bipin): `frontend/**` (additive edits only from others)
+- Shared contract (change only with all agreeing, log in `docs/decisions.md`, update the mock in the same commit): `backend/models.py`, `docs/api-contract.md`, `backend/mocks/**`
 
 ## Style
 Match surrounding code. Python: type hints, pydantic models for shared objects, small pure functions. TS: strict, types
