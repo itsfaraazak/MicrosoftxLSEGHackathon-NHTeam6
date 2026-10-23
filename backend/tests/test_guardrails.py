@@ -1,4 +1,5 @@
 import pandas as pd
+
 from ai.number_check import Fact, check
 from engine import data_clock
 

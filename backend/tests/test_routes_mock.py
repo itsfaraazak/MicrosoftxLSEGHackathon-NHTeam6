@@ -1,4 +1,5 @@
 import pytest
+
 from app import app
 
 GET = ["/api/health", "/api/replay?profile_id=priya&from=2022-01-03&to=2023-12-29"]

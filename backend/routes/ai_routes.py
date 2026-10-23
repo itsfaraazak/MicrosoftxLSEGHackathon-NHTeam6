@@ -11,7 +11,10 @@ def profile_parse():
     if use_mocks():
         return mock("profile_parse")
     from ai.functions import parse_profile
-    return jsonify(parse_profile(request.json["text"]))
+    try:
+        return jsonify(parse_profile(request.json["text"]))
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 422
 
 
 @bp.post("/api/ask")
