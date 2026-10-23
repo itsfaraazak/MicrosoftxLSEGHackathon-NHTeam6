@@ -1,50 +1,168 @@
-// All backend calls go through here. Shapes mirror docs/api-contract.md.
+// All backend calls go through here. Shapes mirror docs/api-contract.md and are checked at runtime by lib/schemas.ts.
+import type { z } from "zod";
+import { DEMO_FALLBACK } from "@/lib/flags";
+import {
+  AgentStepResSchema,
+  AskResSchema,
+  CompareResSchema,
+  HealthResSchema,
+  ParseResSchema,
+  PortfolioResSchema,
+  ReplayResSchema,
+  type Portfolio,
+  type Profile,
+} from "@/lib/schemas";
+
+export * from "@/lib/schemas";
+
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
-export type Goal = { name: string; amount_usd: number; years_away: number };
-export type Holding = { ticker: string; amount_usd: number; is_employer_stock: boolean };
-export type Profile = {
-  name: string; age: number; job_title: string; industry: string; employer: string;
-  location: string; risk_tolerance: "low" | "medium" | "high";
-  experience: "none" | "some" | "experienced"; emergency_fund_months: number;
-  high_interest_debt: boolean; past_behaviour: string; exclusions: string[];
-  contradictions: string[]; goals: Goal[]; holdings: Holding[];
-};
-export type Fact = { id: string; value: number; unit: string; source: string; as_of: string };
-export type Position = {
-  ticker: string; amount_usd: number; bucket: "safe" | "growth"; reason_facts: Fact[];
-};
-export type Portfolio = {
-  sim_date: string; positions: Position[]; safe_bucket_usd: number;
-  growth_bucket_usd: number; overlap_score: number;
-};
-export type GuardEvent = {
-  sim_date: string; drawdown_pct: number; market_wide: boolean;
-  cost_of_selling_usd: number; goal_years_away: number;
-  suggested_action: "hold" | "rebalance" | "move_to_safe"; coach_message?: string;
+// Everything except health may call the LLM, including number-check regeneration.
+export const LLM_TIMEOUT_MS = 30_000;
+const HEALTH_TIMEOUT_MS = 5_000;
+const ENGINE_TIMEOUT_MS = 12_000;
+
+export type ApiErrorKind = "offline" | "timeout" | "http" | "not-json" | "contract" | "cancelled";
+
+export class ApiError extends Error {
+  constructor(
+    readonly kind: ApiErrorKind,
+    readonly endpoint: string,
+    message: string,
+    readonly detail?: { status?: number; path?: string; issues?: z.core.$ZodIssue[] },
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export function formatIssuePath(path: readonly PropertyKey[]): string {
+  return path.reduce<string>((out, key) => {
+    if (typeof key === "number") return `${out}[${key}]`;
+    return out ? `${out}.${String(key)}` : String(key);
+  }, "");
+}
+
+// Offline demo data: the app switches to /public/demo/*.json when the backend can't be reached and the flag is on.
+type SourceListener = () => void;
+let offlineDemoActive = false;
+const sourceListeners = new Set<SourceListener>();
+
+export const dataSource = {
+  isOfflineDemo: () => offlineDemoActive,
+  subscribe(fn: SourceListener) {
+    sourceListeners.add(fn);
+    return () => sourceListeners.delete(fn);
+  },
+  set(active: boolean) {
+    if (offlineDemoActive === active) return;
+    offlineDemoActive = active;
+    sourceListeners.forEach((fn) => fn());
+  },
 };
 
-async function call<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
+type CallOptions<S extends z.ZodType> = {
+  method?: "GET" | "POST";
+  path: string;
+  body?: unknown;
+  schema: S;
+  timeoutMs: number;
+  demoFile?: string;
+  signal?: AbortSignal;
+};
+
+function parseOrThrow<S extends z.ZodType>(endpoint: string, schema: S, json: unknown): z.output<S> {
+  const result = schema.safeParse(json);
+  if (result.success) return result.data;
+  const first = result.error.issues[0];
+  const path = first ? formatIssuePath(first.path) : "";
+  console.error(`Contract mismatch on ${endpoint}`, result.error);
+  throw new ApiError("contract", endpoint, `Contract mismatch at ${path || "(root)"}: ${first?.message ?? "unknown"}`, {
+    path,
+    issues: result.error.issues,
   });
-  if (!res.ok) throw new Error(`${path} failed: ${res.status}`);
-  return res.json() as Promise<T>;
 }
-const post = <T,>(path: string, body: unknown) =>
-  call<T>(path, { method: "POST", body: JSON.stringify(body) });
+
+async function fromDemo<S extends z.ZodType>(endpoint: string, file: string, schema: S): Promise<z.output<S>> {
+  const res = await fetch(`/demo/${file}.json`);
+  if (!res.ok) throw new ApiError("offline", endpoint, `Offline demo file ${file}.json is missing. Run npm run sync-mocks.`);
+  const data = parseOrThrow(endpoint, schema, await res.json());
+  dataSource.set(true);
+  return data;
+}
+
+async function call<S extends z.ZodType>(opts: CallOptions<S>): Promise<z.output<S>> {
+  const method = opts.method ?? "GET";
+  const endpoint = `${method} ${opts.path.split("?")[0]}`;
+  const timeout = AbortSignal.timeout(opts.timeoutMs);
+  const signal = opts.signal ? AbortSignal.any([opts.signal, timeout]) : timeout;
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${opts.path}`, {
+      method,
+      headers: opts.body === undefined ? undefined : { "Content-Type": "application/json" },
+      body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+      signal,
+    });
+  } catch (err) {
+    if (opts.signal?.aborted) throw new ApiError("cancelled", endpoint, "Cancelled");
+    const timedOut = timeout.aborted;
+    if (DEMO_FALLBACK && opts.demoFile) return fromDemo(endpoint, opts.demoFile, opts.schema);
+    throw new ApiError(
+      timedOut ? "timeout" : "offline",
+      endpoint,
+      timedOut ? `No reply after ${Math.round(opts.timeoutMs / 1000)} seconds` : String(err),
+    );
+  }
+
+  dataSource.set(false);
+  const text = await res.text();
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new ApiError(
+      res.ok ? "not-json" : "http",
+      endpoint,
+      res.ok ? "The backend replied with something that isn't JSON" : `The backend returned ${res.status}`,
+      { status: res.status },
+    );
+  }
+  if (!res.ok) throw new ApiError("http", endpoint, `The backend returned ${res.status}`, { status: res.status });
+  return parseOrThrow(endpoint, opts.schema, json);
+}
 
 export const api = {
-  parseProfile: (text: string) =>
-    post<{ profile: Profile; contradictions: string[] }>("/api/profile/parse", { text }),
-  portfolio: (profile: Profile, sim_date: string) =>
-    post<{ portfolio: Portfolio; explanation: string; facts: Fact[] }>("/api/portfolio", { profile, sim_date }),
-  compare: (profiles: Profile[], sim_date: string) =>
-    post<{ portfolios: Portfolio[] }>("/api/compare", { profiles, sim_date }),
-  replay: (profile_id: string, from: string, to: string) =>
-    call<{ months: { date: string; ours: number; tech_heavy: number }[]; events: GuardEvent[] }>(
-      `/api/replay?profile_id=${profile_id}&from=${from}&to=${to}`),
-  ask: (question: string, profile: Profile, sim_date: string) =>
-    post<{ answer: string; facts_used: Fact[] }>("/api/ask", { question, profile, sim_date }),
+  health: () => call({ path: "/api/health", schema: HealthResSchema, timeoutMs: HEALTH_TIMEOUT_MS }),
+  parseProfile: (text: string, signal?: AbortSignal) =>
+    call({
+      method: "POST", path: "/api/profile/parse", body: { text }, schema: ParseResSchema,
+      timeoutMs: LLM_TIMEOUT_MS, demoFile: "profile_parse", signal,
+    }),
+  portfolio: (profile: Profile, sim_date: string, signal?: AbortSignal) =>
+    call({
+      method: "POST", path: "/api/portfolio", body: { profile, sim_date }, schema: PortfolioResSchema,
+      timeoutMs: LLM_TIMEOUT_MS, demoFile: "portfolio", signal,
+    }),
+  compare: (profiles: Profile[], sim_date: string, signal?: AbortSignal) =>
+    call({
+      method: "POST", path: "/api/compare", body: { profiles, sim_date }, schema: CompareResSchema,
+      timeoutMs: LLM_TIMEOUT_MS, demoFile: "compare", signal,
+    }),
+  replay: (profile_id: string, from: string, to: string, signal?: AbortSignal) =>
+    call({
+      path: `/api/replay?${new URLSearchParams({ profile_id, from, to })}`, schema: ReplayResSchema,
+      timeoutMs: LLM_TIMEOUT_MS, demoFile: "replay", signal,
+    }),
+  ask: (question: string, profile: Profile, sim_date: string, signal?: AbortSignal) =>
+    call({
+      method: "POST", path: "/api/ask", body: { question, profile, sim_date }, schema: AskResSchema,
+      timeoutMs: LLM_TIMEOUT_MS, demoFile: "ask", signal,
+    }),
+  agentStep: (portfolio: Portfolio, sim_date: string, signal?: AbortSignal) =>
+    call({
+      method: "POST", path: "/api/agent/step", body: { portfolio, sim_date }, schema: AgentStepResSchema,
+      timeoutMs: ENGINE_TIMEOUT_MS, demoFile: "agent_step", signal,
+    }),
 };

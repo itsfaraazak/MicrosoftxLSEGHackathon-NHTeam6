@@ -1,0 +1,114 @@
+"use client";
+import { motion, useReducedMotion, type TargetAndTransition } from "motion/react";
+import { useRef, useState, useSyncExternalStore } from "react";
+import { cn } from "@/lib/utils";
+import { panelId, tabId, type ViewId } from "@/lib/views";
+
+export type OrbitView = { id: ViewId; title: string; content: React.ReactNode };
+
+const SPRING = { type: "spring", stiffness: 90, damping: 20, mass: 1 } as const;
+const FADE = { duration: 0.25 } as const;
+
+// Stage width drives the carousel geometry; the server snapshot is a desktop default.
+function useWidth(ref: React.RefObject<HTMLElement | null>): number {
+  return useSyncExternalStore(
+    (notify) => {
+      const el = ref.current;
+      if (!el) return () => {};
+      const ro = new ResizeObserver(notify);
+      ro.observe(el);
+      return () => ro.disconnect();
+    },
+    () => ref.current?.clientWidth ?? 1440,
+    () => 1440,
+  );
+}
+
+function ringOffset(i: number, active: number, n: number): number {
+  let off = (((i - active) % n) + n) % n;
+  if (off > n / 2) off -= n;
+  return off;
+}
+
+function pose(off: number, side: number, reduced: boolean): TargetAndTransition {
+  if (reduced) return { x: 0, z: 0, rotateY: 0, scale: 1, opacity: off === 0 ? 1 : 0 };
+  if (off === 0) return { x: 0, z: 0, rotateY: 0, scale: 1, opacity: 1 };
+  if (off === 1) return { x: side, z: -560, rotateY: -46, scale: 1, opacity: 0.55 };
+  if (off === -1) return { x: -side, z: -560, rotateY: 46, scale: 1, opacity: 0.55 };
+  return { x: 0, z: -1300, rotateY: 0, scale: 0.8, opacity: 0 };
+}
+
+export function Orbit({
+  views,
+  active,
+  onSelect,
+}: {
+  views: OrbitView[];
+  active: number;
+  onSelect: (i: number) => void;
+}) {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const width = useWidth(stageRef);
+  const reduced = useReducedMotion() ?? false;
+  const [touchX, setTouchX] = useState<number | null>(null);
+
+  const narrow = width < 860;
+  const panelW = narrow ? width * 0.92 : Math.min(1000, width * 0.84);
+  const side = narrow ? width * 0.96 : Math.min(width * 0.66, 760);
+  const n = views.length;
+
+  return (
+    <div
+      ref={stageRef}
+      className="relative min-h-0 flex-1 overflow-clip [perspective-origin:50%_40%] [perspective:2200px]"
+      onTouchStart={(e) => setTouchX(e.touches[0]?.clientX ?? null)}
+      onTouchEnd={(e) => {
+        const end = e.changedTouches[0]?.clientX;
+        if (touchX !== null && end !== undefined && Math.abs(end - touchX) > 60) {
+          onSelect(active + (end < touchX ? 1 : -1));
+        }
+        setTouchX(null);
+      }}
+    >
+      <div className="absolute inset-0 [transform-style:preserve-3d]">
+        {views.map((v, i) => {
+          const off = ringOffset(i, active, n);
+          const isActive = off === 0;
+          const isSide = !reduced && Math.abs(off) === 1;
+          return (
+            <motion.section
+              key={v.id}
+              id={panelId(v.id)}
+              role="tabpanel"
+              aria-labelledby={tabId(v.id)}
+              aria-hidden={!isActive}
+              initial={false}
+              animate={pose(off, side, reduced)}
+              transition={reduced ? FADE : SPRING}
+              style={{ width: panelW, marginLeft: -panelW / 2, zIndex: isActive ? 3 : isSide ? 2 : 0 }}
+              className={cn(
+                "glass-panel absolute top-2.5 bottom-4 left-1/2 flex flex-col overflow-hidden rounded-[28px] will-change-transform",
+                isSide && "cursor-pointer saturate-[0.7] hover:saturate-100",
+                !isActive && !isSide && "pointer-events-none",
+              )}
+            >
+              <div inert={!isActive} className="flex min-h-0 flex-1 flex-col">
+                {v.content}
+              </div>
+              {isSide && (
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  aria-hidden
+                  onClick={() => onSelect(i)}
+                  className="absolute inset-0 z-10 cursor-pointer bg-transparent"
+                  title={`Go to ${v.title}`}
+                />
+              )}
+            </motion.section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
