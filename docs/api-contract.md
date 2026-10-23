@@ -19,3 +19,11 @@ Types: frontend/lib/api.ts. Switch frontend to real backend = NEXT_PUBLIC_API_UR
 - HTTP 504: the model timed out. HTTP 502: the model service failed or is unreachable. Show a friendly message / use the mock or template text; do not retry in a loop.
 - HTTP 422 `{"error": string}` (no `fallback`): the profile text could not be parsed into a valid profile.
 Server env: `LLM_TIMEOUT_S` (per call, default 12), `LLM_DEADLINE_S` (per request, default 18).
+
+## POST /api/proof  (owner B; "quant dev in a box" — every claim backed by code + numbers)
+Sends `{profile, portfolio?, sim_date}` (portfolio optional). Returns the shape in `backend/mocks/proof.json`:
+`strategy`/`baseline` weights, `metrics[]` (cagr, volatility, max_drawdown, sharpe, overlap; `strategy`,`baseline` as fractions, `better` bool),
+`stress[]` (named past sell-offs), `claims[]` (`verdict`: supported | not_supported | inconclusive; `evidence`; `code_id`),
+`code[]` (exact source of the functions that ran, `sha256`, `output`), `facts[]` (Fact objects, so the number check covers the proof),
+`caveats[]`, `script` (standalone reproducible script). Backtest window ends at the day before `sim_date` (data clock). Not-supported verdicts are shown honestly.
+Errors: 422 bad input; 504/502 not applicable (no LLM in the compute path).
