@@ -17,6 +17,7 @@ import { ProofResSchema } from "@/lib/proof-schema";
 export * from "@/lib/schemas";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+export const API_BASE = BASE;
 
 // Everything except health may call the LLM, including number-check regeneration.
 export const LLM_TIMEOUT_MS = 30_000;

@@ -63,6 +63,11 @@ export function usd(n: number): string {
   return usdFmt.format(n);
 }
 
+// Axis labels: $98k.
+export function usdCompact(n: number): string {
+  return `$${Math.round(n / 1000)}k`;
+}
+
 export function pct(n: number, digits = 0): string {
   return `${n.toFixed(digits)}%`;
 }

@@ -14,9 +14,11 @@ export type SimClock = {
   cursor: number;
   // 0..1, how far through the replay window the cursor is. Drives the dial only.
   progress: number;
+  // Furthest cursor shown since the cursor last sat at the start. The chart's y-range grows to it and never shrinks.
+  reached: number;
 };
 
-const INITIAL_CLOCK: SimClock = { date: SIM_START, cursor: 0, progress: 0 };
+export const INITIAL_CLOCK: SimClock = { date: SIM_START, cursor: 0, progress: 0, reached: 0 };
 
 type AppState = {
   persona: PersonaId;

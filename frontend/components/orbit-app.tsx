@@ -9,7 +9,7 @@ import { ProofView } from "@/components/views/proof-view";
 import { ProfileView } from "@/components/views/profile-view";
 import { ReplayView } from "@/components/views/replay-view";
 import { isTypingTarget } from "@/lib/shortcuts";
-import { VIEWS, viewIndex, type ViewId } from "@/lib/views";
+import { goToView, VIEWS, viewIndex, type ViewId } from "@/lib/views";
 
 const CONTENT: Record<ViewId, React.ReactNode> = {
   profile: <ProfileView />,
@@ -29,7 +29,7 @@ export function OrbitApp() {
   const select = useCallback((i: number) => {
     const n = VIEWS.length;
     const next = VIEWS[((i % n) + n) % n].id;
-    window.history.replaceState(null, "", `?view=${next}`);
+    goToView(next);
   }, []);
 
   useEffect(() => {
